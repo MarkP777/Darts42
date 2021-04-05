@@ -1,0 +1,606 @@
+package com.gmp.android.darts42;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.ServerValue;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+
+/*
+public class MainActivity extends AppCompatActivity
+        implements MyRecyclerViewAdapter.ItemClickListener
+*/
+
+public class MainActivity extends AppCompatActivity {
+
+
+    private static final String TAG = "MainActivity";
+
+    public static final String ANONYMOUS = "anonymous";
+    public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
+
+    public static final int RC_SIGN_IN = 1;
+    public static final String EXTRA_OPPONENTID = "Opponent_ID";
+    public static final String EXTRA_MATCHID = "Match_ID";
+
+    private final Long challengeTimeout = (long) 20 * 1000; //Challenge timeout in milliseconds
+
+
+
+
+    private EditText mMessageEditText;
+    private Button actionButton;
+    private TextView whatsHappeningText;
+    private TextView textTotalScore;
+    private Integer thisScore;
+    private RecyclerView recyclerView;
+    private LinearLayout bottomSectionPrompt;
+    private LinearLayout bottomSectionWaiting;
+
+    private String mUsername;
+    private String mUserNickname;
+    private String mUid;
+    private String mEMailAddress;
+    private String homeStatus;
+    private Integer buttonState;
+    private Long timeStampLong;
+    private Calendar timeoutCalendar = Calendar.getInstance();
+    private Calendar timeNowCalendar;
+
+    private String matchID;
+    private String opponentID;
+    private String messageID;
+
+    private FirebaseDatabase mDatabase;
+    private DatabaseReference mDatabaseReference;
+    private ChildEventListener mPlayerMessageListener;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+
+    public CommonData commonData;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        actionButton = (Button) findViewById(R.id.btAction);
+        actionButton.setEnabled(false);
+
+        whatsHappeningText = (TextView) findViewById(R.id.tvWhatsHappening);
+        mUsername = ANONYMOUS;
+
+        mDatabase = FirebaseDatabase.getInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        commonData = CommonData.getInstance();
+
+        mDatabaseReference = mDatabase.getReference().child("player_messages");
+
+
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // User is signed in
+                    Log.d("MainActivity", "User signed in");
+                    onSignedInInitialize(user.getDisplayName(), user.getUid(), user.getEmail());
+
+                    buttonState = 100;
+                    setButton(buttonState);
+
+
+                    //make sure that we're listening for messages at the right level
+                    mDatabaseReference = mDatabaseReference.child(mUid);
+                    attachPlayerMessageListener();
+
+                    //TODO: Set the button to default state of set up new game
+                    //TODO: Set a new listener on player_messages
+                    //TODO: When this fires look at the type - button changes to continue game or
+                    //TODO: respond to challenge
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                } else {
+                    // User is signed out
+                    onSignedOutCleanup();
+                    //Choose authentication providers
+                    List<AuthUI.IdpConfig> providers = Arrays.asList(
+                            new AuthUI.IdpConfig.EmailBuilder().build(),
+                            new AuthUI.IdpConfig.GoogleBuilder().build());
+
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setAvailableProviders(providers)
+                                    .build(),
+                            RC_SIGN_IN);
+                }
+            }
+        };
+
+
+/*
+        @Override
+        public void onItemClick (View view,int position){
+            Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+        }
+*/
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                // Sign-in succeeded, set up the UI
+                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                // Sign in was canceled by the user, finish the activity
+                Toast.makeText(this, "Sign in cancelled", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    /*
+        if (adapter.getItemCount() != 0)
+        {
+
+            // When we resume the recycle view will be rebuilt with items from
+            // the Firebase DB. So, clear the list of scores and reset the total
+            scoreLinesIn4Columns.clear();
+            totalScore = 0;
+
+            // Workaround to get around Android crash
+            // See https://stackoverflow.com/questions/30220771/recyclerview-inconsistency-detected-invalid-item-position
+            recyclerView.getRecycledViewPool().clear();
+
+            // Tell the adapter that everything's changed
+            adapter.notifyDataSetChanged();
+       }
+
+     */
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        }
+        detachPlayerMessageListener();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent1;
+        switch (item.getItemId()) {
+            case R.id.sign_out_menu:
+                AuthUI.getInstance().signOut(this);
+                return true;
+            case R.id.Menu1:
+                intent1 = new Intent(MainActivity.this, IssueChallenge.class);
+                startActivityForResult(intent1, 1);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void onSignedInInitialize(String username, String userid, String userEMailAddress) {
+        mUsername = username;
+
+        mUserNickname = findNickname(mUsername);
+        mUid = userid;
+        mEMailAddress = userEMailAddress;
+
+        //Put home user id in common data
+        commonData.setHomeUserID(mUid);
+        commonData.setHomeUserNickname(mUserNickname);
+
+        //Check to make sure that the player has a profile
+        DatabaseReference playerProfileReference = mDatabase.getReference().child("player_profiles");
+        Query data = playerProfileReference.orderByKey().equalTo(mUid).limitToFirst(1);
+        data.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                if (snapshot.exists())
+                    Log.d("MainActivity", "User profile found");
+                    //TODO: unwrap the profile
+
+
+                else {
+                    Log.d("MainActivity", "No user status found");
+
+                    mDatabaseReference = mDatabase.getReference().child("player_profiles");
+                    PlayerProfile playerProfile = new PlayerProfile(mUsername,mUserNickname,mEMailAddress,false);
+                    mDatabaseReference.child(mUid).setValue(playerProfile);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+
+    }
+
+    private void onSignedOutCleanup() {
+        mUsername = ANONYMOUS;
+  /*
+        scoreLinesIn4Columns.clear();
+  */
+        detachPlayerMessageListener();
+
+    }
+
+    private void attachPlayerMessageListener() {
+        if (mPlayerMessageListener == null) {
+            mPlayerMessageListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+
+                        //Unwrap the message
+                        PlayerMessage playerMessage = dataSnapshot.getValue(PlayerMessage.class);
+
+                        opponentID = playerMessage.getSender();
+                        matchID = playerMessage.getPayload();
+                        buttonState = playerMessage.getMessageType();
+                        timeStampLong = playerMessage.getTimestamp();
+                        messageID = dataSnapshot.getKey();
+
+
+                        Log.d(TAG, "Player message of type "
+                                + buttonState
+                                + " with payload "
+                                + matchID
+                                + " received from "
+                                + opponentID
+                        );
+
+
+
+                    setButton(buttonState);
+                }
+
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            mDatabaseReference.addChildEventListener(mPlayerMessageListener);
+
+        }
+    }
+
+
+
+    private void detachPlayerMessageListener() {
+        if (mPlayerMessageListener != null) {
+            mDatabaseReference.removeEventListener(mPlayerMessageListener);
+            mPlayerMessageListener = null;
+        }
+    }
+
+
+    private void setButton(Integer buttonState) {
+
+        //Default case - nothing happening
+        whatsHappeningText.setText("You have no matches in progress nor any challenges");
+        actionButton.setText("New match");
+
+        switch (buttonState) {
+            case 100: //Nothing happening
+                break;
+
+
+            case 101: //Challenge
+                //Check the timestamp
+                timeNowCalendar = Calendar.getInstance();
+                //timeoutCalendar.setTimeInMillis(timeStampLong+challengeTimeout);
+                Log.d(TAG, "Now: " + Long.toString(timeNowCalendar.getTimeInMillis()) + " Timeout: "+ Long.toString(timeStampLong+challengeTimeout);
+                if (timeNowCalendar.getTimeInMillis() >= (timeStampLong+challengeTimeout)) { //Expired so ignore and delete the message
+                    mDatabaseReference = mDatabase.getReference().child("player_messages").child(mUid).child(messageID);
+                    mDatabaseReference.removeValue();
+                }
+                else { //Still current
+                    whatsHappeningText.setText("You have received a challenge from another player");
+                    actionButton.setText("Review challenge");
+                }
+                break;
+
+
+            case 102: //Game in progress
+                //TODO Elaborate
+                whatsHappeningText.setText("You are playing a match");
+                actionButton.setText("Continue match");
+                break;
+
+            case 103: //Stray decline message
+                //Delete the message
+                mDatabaseReference = mDatabase.getReference().child("player_messages").child(mUid).child(messageID);
+                mDatabaseReference.removeValue();
+        }
+
+
+        actionButton.setEnabled(true);
+    }
+
+    public void onClick(View view) {
+
+        switch (buttonState) {
+            case 100:
+                //Set up new game
+                startNewMatch();
+                break;
+
+
+            case 101:
+                //Respond to challenge
+                reviewChallenge();
+                break;
+
+
+            case 102:
+                //Continue game
+                continueMatch();
+                break;
+
+
+        }
+
+    }
+
+        private void startNewMatch() {
+            Log.d(TAG, "Into startNewMatch");
+            detachPlayerMessageListener();
+            Intent intent1;
+            intent1 = new Intent(MainActivity.this, IssueChallenge.class);
+            startActivityForResult(intent1, 0);
+        }
+
+        private void reviewChallenge() {
+            Log.d(TAG, "Into review challenge");
+            detachPlayerMessageListener();
+            Intent intent1;
+            intent1 = new Intent(MainActivity.this, ReviewChallenge.class);
+            intent1.putExtra(ReviewChallenge.EXTRA_MATCHID, (String) matchID );
+            intent1.putExtra(ReviewChallenge.EXTRA_OPPONENTID, (String) opponentID);
+            intent1.putExtra(ReviewChallenge.EXTRA_TIMESTAMP,(long)timeStampLong);
+            startActivityForResult(intent1, 1);
+    }
+
+
+        private void continueMatch() {
+            Log.d(TAG, "Into play darts");
+            detachPlayerMessageListener();
+           /*
+            Intent intent1;
+            intent1 = new Intent(MainActivity.this, PlayDarts.class);
+            intent1.putExtra(PlayDarts.EXTRA_MATCHID, (String) matchID );
+            intent1.putExtra(PlayDarts.EXTRA_OPPONENTID, (String) opponentID);
+            startActivityForResult(intent1, 2);
+
+            */
+        }
+
+
+
+
+/*
+
+    private void attachDatabaseReadListener() {
+        if (mChildEventListener == null) {
+            mChildEventListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                    //Unwrap the message
+                    PlayerMessage playerMessage = dataSnapshot.getValue(PlayerMessage.class);
+
+                    Log.d(TAG, "Player message received from "
+                            + playerMessage.getSender()
+                            + " of type "
+                            + playerMessage.getMessageType()
+                            + " with payload "
+                            + playerMessage.getPayload());
+
+                    //Delete the message once it's been read
+                    mScoresDatabaseReference.child(dataSnapshot.getKey()).removeValue();
+                    /*
+
+                    Score scoreRow = dataSnapshot.getValue(Score.class);
+
+                    */
+                    /*
+                    Three cases
+                    1) it's a seed record
+                    2) it's a home score
+                    3) it's an away score
+                     */
+                    /*
+                    if (scoreRow.getFieldTotalScore()<0) {
+                        scoreLinesIn4Columns.add("");
+                        scoreLinesIn4Columns.add(Integer.toString(0));
+                        scoreLinesIn4Columns.add(Integer.toString(0));
+                        scoreLinesIn4Columns.add("");
+                        //This needs some sorting out. It's not robust
+
+                    }
+
+                    else {
+
+                    if (scoreRow.getFieldName().equals(mUsername)) {
+                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldScore()));
+                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldTotalScore()));
+                        scoreLinesIn4Columns.add(scoreLinesIn4Columns.get(scoreLinesIn4Columns.size()-4));
+                        scoreLinesIn4Columns.add("");
+                    // In this case it's the other player to go next
+                        bottomSectionPrompt.setVisibility(View.GONE);
+                        bottomSectionWaiting.setVisibility(View.VISIBLE);
+                    // Remind home player of his total score
+                        totalScore = scoreRow.getFieldTotalScore();
+
+                    }
+                    else {
+                        scoreLinesIn4Columns.add("");
+                        scoreLinesIn4Columns.add(scoreLinesIn4Columns.get(scoreLinesIn4Columns.size()-4));
+                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldTotalScore()));
+                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldScore()));
+                    // In this case it's the home player to go next
+                        bottomSectionWaiting.setVisibility(View.GONE);
+                        bottomSectionPrompt.setVisibility(View.VISIBLE);
+                    }}
+
+                    adapter.notifyItemRangeInserted(adapter.getItemCount(),4);
+                    textTotalScore.setText(String.format("%1$d", totalScore));
+                    recyclerView.scrollToPosition(adapter.getItemCount()-1);
+
+                    */
+
+        /*
+
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            mScoresDatabaseReference.addChildEventListener(mChildEventListener);
+
+        }
+
+    private void detachDatabaseReadListener() {
+        if (mChildEventListener != null) {
+            mScoresDatabaseReference.removeEventListener(mChildEventListener);
+            mChildEventListener = null;
+        }
+    }
+*/
+/*
+    //Temporary dialog to start game
+
+    public void showNoticeDialog() {
+
+        // Create an instance of the dialog fragment and show it
+
+        DialogFragment dialog = new NoticeDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putString("", " ");
+        dialog.setArguments(args);
+        dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
+    }
+
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+
+        // User touched the dialog's negative button - there isn't one so we really shouldn't get here
+
+        //if (BuildConfig.DEBUG) Log.w(TAG,"In alert cancel dialog");
+    }
+
+*/
+        private void setHomeStatus (String playerStatus){
+            homeStatus = playerStatus;
+        }
+
+    private String findNickname(String fullName) {
+        Integer tempIndex;
+        String tempName;
+
+        //Get rid of leading and trailing spaces
+        tempName = fullName.trim();
+
+        //If nothing left nickname becomes a space
+        if (tempName.length() == 0) {
+            return " ";
+        } else {
+            tempIndex = tempName.indexOf(" ");
+            //if there are no spaces in the name, nickname is the whole name
+            if (tempIndex < 0) {
+                return tempName;
+            } else
+                //Otherwise take the substring up to, but not including, the first space
+                return tempName.substring(0, tempIndex - 1);
+        }
+    }
+        }

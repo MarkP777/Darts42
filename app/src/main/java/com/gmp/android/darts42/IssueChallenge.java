@@ -1,0 +1,444 @@
+package com.gmp.android.darts42;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.TextView;
+
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Date;
+
+public class IssueChallenge extends AppCompatActivity {
+
+    private static final String TAG = "IssueChallenge";
+
+    private Button checkOpponentButton;
+    private EditText mMessageEditText;
+
+    private final Integer challengeTimeout = 20 * 1000;
+    private final Integer challengeTimeoutMargin = 5 * 1000;
+
+    public FirebaseDatabase mScoresDatabase;
+    private DatabaseReference mScoresDatabaseReference;
+    private ChildEventListener mChildEventListener;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    public CommonData commonData;
+    public String mUid;
+
+    private String newMatchKey;
+
+    private Spinner setsSpinner;
+    private Spinner legsSpinner;
+    private Spinner startSpinner;
+
+    private String[] setsValues = new String[7];
+    private String[] legsValues = new String [6];
+    private String[] startValues = new String[3];
+
+    private SwitchCompat doubleToStartSwitch;
+    private SwitchCompat doubleToFinishSwitch;
+
+    private Button sendChallengeButton;
+
+    private Match matchToPlay;
+
+    private PlayerProfile awayProfile;
+
+    private CountDownTimer mcountDownTimer;
+
+    private ChildEventListener mPlayerMessageListener;
+/*
+    final EditText emailValidate = (EditText)findViewById(R.id.tvOpponentEmail);
+    final TextView opponentNameConfirm = (TextView)findViewById(R.id.tvOpponentNameConfirm);
+    String awayEMail = emailValidate.getText().toString().trim();
+*/
+
+    private EditText emailValidate;
+
+    private TextView opponentNameConfirm;
+    private TextView challengeCountdown;
+
+    private String awayEMail;
+
+    String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+    //String emailPattern = "[a-zA-Z0-9]";
+
+    String founduserid = null;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_issue_challenge);
+
+        mScoresDatabase = FirebaseDatabase.getInstance();
+        checkOpponentButton = (Button) findViewById(R.id.btCheckOpponent);
+
+        emailValidate = (EditText)findViewById(R.id.tvOpponentEmail);
+        opponentNameConfirm = (TextView)findViewById(R.id.tvOpponentNameConfirm);
+        String awayEMailText = emailValidate.getText().toString().trim();
+
+
+        /*
+        emailValidate = (EditText)findViewById(R.id.tvOpponentEmail);
+        opponentNameConfirm = (TextView)findViewById(R.id.tvOpponentNameConfirm);
+        awayEMail = emailValidate.getText().toString().trim();
+*/
+
+        commonData = CommonData.getInstance();
+        mUid = commonData.getHomeUserID();
+
+        Log.d(TAG,"Starting Issue Challenge");
+
+        //Temporary code to keep things moving on
+        //Tell the parent activity that we've come from Issue Challenge
+        Intent intent = new Intent();
+        intent.putExtra("IssueChallenge", 10);
+
+        //No checks on success
+        setResult(RESULT_OK, intent);
+        //Temporary code above
+
+        //Set up values for the spinners
+        int counter;
+        int intValue = 501;
+        for (counter = 0; counter < 3; counter++) {
+            startValues[counter] = String.format("%1$3d", intValue);
+            intValue = intValue - 100;
+        }
+
+        intValue = 1;
+        for (counter = 0; counter < 7; counter++) {
+            setsValues[counter] = String.format("%1$2d", intValue);
+            intValue = intValue +2;
+        }
+
+        intValue = 1;
+        for (counter = 0; counter < 6; counter++) {
+            legsValues[counter] = String.format("%1$2d", intValue);
+            intValue = intValue + 2;
+        }
+
+        //Bind the spinners to the layouts
+        startSpinner = (Spinner) findViewById(R.id.spStart);
+        setsSpinner = (Spinner) findViewById(R.id.spMaxSets);
+        legsSpinner = (Spinner) findViewById(R.id.spMaxLegs);
+
+        //Declare the adapters for the spinners
+        ArrayAdapter<String> startAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, startValues);
+        ArrayAdapter<String> setsAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, setsValues);
+        ArrayAdapter<String> legsAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, legsValues);
+
+        //Define the layouts for the spinner dropdowns
+        startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        setsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        legsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Apply the adapters to the spinner
+        startSpinner.setAdapter(startAdapter);
+        setsSpinner.setAdapter(setsAdapter);
+        legsSpinner.setAdapter(legsAdapter);
+
+        // Set the default values for the spinners
+        startSpinner.setSelection(0); //Start at 501
+        setsSpinner.setSelection(0); //1 set per match
+        legsSpinner.setSelection(1); //3 legs per set
+
+        //Sort out the switches
+        doubleToStartSwitch = (SwitchCompat) findViewById(R.id.swDoubleToStartPrompt);
+        doubleToFinishSwitch = (SwitchCompat) findViewById(R.id.swDoubleToFinishPrompt);
+
+        //And lastly the challenge button
+        sendChallengeButton = (Button) findViewById(R.id.btSendChallenge);
+
+        //Disable the game details until an opponent is found
+        startSpinner.setEnabled(false);
+        setsSpinner.setEnabled(false);
+        legsSpinner.setEnabled(false);
+        doubleToStartSwitch.setEnabled(false);
+        doubleToFinishSwitch.setEnabled(false);
+        sendChallengeButton.setEnabled(false);
+
+        emailValidate.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+
+                if (s.toString().matches(emailPattern) && s.length() > 0)
+                {
+                    checkOpponentButton.setEnabled(true);
+                    awayEMail = s.toString().trim();
+                }
+                else
+                {
+                    checkOpponentButton.setEnabled(false);
+                }
+            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // other stuffs
+            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Ensure the opponent's name is clear
+                opponentNameConfirm.setText("");
+            }
+        });
+
+    }
+
+    private void writeNewChallenge (String founduserid, Match newMatchDetails) {
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+        mScoresDatabaseReference = mScoresDatabase.getReference("matches");
+        newMatchKey = mScoresDatabaseReference.push().getKey();
+        mScoresDatabaseReference.child(newMatchKey).setValue(newMatchDetails);
+
+        mScoresDatabaseReference = mScoresDatabase.getReference("player_messages/"+founduserid+"/"
+        );
+        //Write out the player message with a 0 timestamp
+        PlayerMessage playerMessage = new PlayerMessage(101,newMatchKey,mUid,(long) 0);
+        String tempKey = mScoresDatabaseReference.push().getKey();
+        mScoresDatabaseReference.child(tempKey).setValue(playerMessage);
+        //Now update the time stamp with the server time - this is the only way I could make this work
+        //while keeping the timestamp as a Long
+        mScoresDatabaseReference.child(tempKey).child("timestamp").setValue(ServerValue.TIMESTAMP);
+        }
+
+    public void checkOpponent(View view) {
+
+        DatabaseReference playerProfilesReference = mScoresDatabase.getReference().child("player_profiles");
+        Query data = playerProfilesReference.orderByChild("playerEMail").equalTo(awayEMail).limitToFirst(1);
+        data.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                if (snapshot.exists()) {
+                    // Get the opponent's details
+                    for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                        founduserid = childSnapshot.getKey();
+                        Log.d(TAG, "Challenger user profile found " + founduserid);
+                        awayProfile = childSnapshot.getValue(PlayerProfile.class);
+                        opponentNameConfirm.setText(awayProfile.getPlayerName());
+                        if (awayProfile.getPlayerEngaged())
+                            //Opponent's busy flag set
+                            opponentNameConfirm.setText(awayProfile.getPlayerName() + "is busy. Please select another opponent.");
+
+                        else {
+                            //Opponent is not busy
+                            opponentNameConfirm.setText(awayProfile.getPlayerName());
+
+                            //Disable any changes to the opponent ...
+                            emailValidate.setEnabled(false);
+                            checkOpponentButton.setEnabled(false);
+
+                            //... and enable the match detail input
+                            startSpinner.setEnabled(true);
+                            setsSpinner.setEnabled(true);
+                            legsSpinner.setEnabled(true);
+                            doubleToStartSwitch.setEnabled(true);
+                            doubleToFinishSwitch.setEnabled(true);
+                            sendChallengeButton.setEnabled(true);
+                        }
+                    }
+                }
+                else {
+                    //Couldn't find a profile
+                    Log.d(TAG, "No challenger user profile found");
+                    opponentNameConfirm.setText("Cannot find player with this email address. Please try again");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+}
+
+    public void sendChallenge(View view) {
+
+        //Construct match details
+        matchToPlay = new Match(
+                mUid,
+                founduserid,
+                Integer.valueOf(setsValues[setsSpinner.getSelectedItemPosition()].trim()),
+                Integer.valueOf(legsValues[legsSpinner.getSelectedItemPosition()].trim()),
+                Integer.valueOf(startValues[startSpinner.getSelectedItemPosition()].trim()),
+                doubleToStartSwitch.isChecked(),
+                doubleToFinishSwitch.isChecked(),
+                0,0,0,0);
+
+        //Set challenger's status to busy
+        mScoresDatabaseReference = mScoresDatabase.getReference("player_profiles");
+        mScoresDatabaseReference.child(mUid).child("playerEngaged").setValue(true);
+
+        //Issue the challenge
+        writeNewChallenge(founduserid,matchToPlay);
+
+        //Look for response in player messages. If nothing received in 3 minutes then assume that
+        //opponent is not around
+
+        mScoresDatabaseReference = mScoresDatabase.getReference().child("player_messages").child(mUid);
+
+        attachPlayerMessageListener();
+
+        setCountDownTimer();
+
+    }
+
+    private void attachPlayerMessageListener() {
+        if (mPlayerMessageListener == null) {
+            mPlayerMessageListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                    //Response received, so kill the countdown timer and the listener, and hide the countdown
+                    killCountdownTimer();
+                    detachPlayerMessageListener();
+                    challengeCountdown.setVisibility(View.GONE);
+
+                    //Unwrap the message
+                    PlayerMessage playerMessage = dataSnapshot.getValue(PlayerMessage.class);
+
+                    Log.d(TAG, "Player message of type "
+                            + playerMessage.getMessageType()
+                            + " with payload "
+                            + playerMessage.getPayload()
+                            + " received from "
+                            + playerMessage.getSender()
+                    );
+
+                   if (playerMessage.getMessageType() == 103) {
+                       //Player declines
+                       //Delete the message
+                       mScoresDatabaseReference.child(dataSnapshot.getKey()).removeValue();
+
+                       //then get out
+                       handleNegativeResponse();
+                   }
+                   else
+                   {
+                       //Assume that it's a Yes (message type 2), and go to play the match
+                       goToMatch();
+                   }
+                }
+
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            mScoresDatabaseReference.addChildEventListener(mPlayerMessageListener);
+
+        }
+    }
+
+    private void setCountDownTimer() {
+        challengeCountdown = (TextView)findViewById(R.id.tvChallengeCountdown);
+        //challengeCountdown.setVisibility(View.VISIBLE);
+        mcountDownTimer = new CountDownTimer(challengeTimeout+challengeTimeoutMargin, 1000) {
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                double minutesToGo;
+                double secondsToGo;
+                String textToDisplay;
+                minutesToGo = Math.floor((double) millisUntilFinished/1000/60);
+                secondsToGo = Math.floor((double) (millisUntilFinished - (minutesToGo*60*1000))/1000);
+                //Log.d("Countdown",String.format("Waiting for opponent's response: %1$02d"+":"+"%2$02d",(int)minutesToGo,(int)secondsToGo));
+                textToDisplay=String.format("Waiting for "+
+                        awayProfile.getPlayerNickName()+
+                        "'s response: %1$02d"+
+                        ":"+
+                        "%2$02d",
+                        (int)minutesToGo,(int)secondsToGo);
+                challengeCountdown.setText(textToDisplay);
+            }
+
+            @Override
+            public void onFinish() {
+                //Countdown timer has fired so no response from opponent
+                //Stop listening for messages and then tidy up
+                challengeCountdown.setText("");
+                detachPlayerMessageListener();
+                handleNegativeResponse();
+                //challengeCountdown.setVisibility(View.GONE);
+
+            }
+        };
+        mcountDownTimer.start();
+    }
+
+    private void killCountdownTimer() {
+        if (mcountDownTimer != null) mcountDownTimer.cancel();
+        mcountDownTimer = null;
+    }
+
+    private void handleNegativeResponse() {
+        //The opponent has either declined the challenge or hasn't responded
+        //Tell the challenger and then tidy up
+
+            Snackbar snackbar = Snackbar.make(challengeCountdown,awayProfile.getPlayerNickName()+" does not want to play",Snackbar.LENGTH_LONG);
+            snackbar.show();
+
+            //Delete the match record
+            mScoresDatabaseReference = mScoresDatabase.getReference("matches");
+            mScoresDatabaseReference.child(newMatchKey).removeValue();
+
+            //TODO: Need to work out what to do with the opponents challenge record
+
+            //Set profile status to available
+            mScoresDatabaseReference = mScoresDatabase.getReference("player_profiles");
+            mScoresDatabaseReference.child(mUid).child("playerEngaged").setValue(false);
+
+
+    }
+
+
+
+    private void detachPlayerMessageListener() {
+        if (mPlayerMessageListener != null) {
+            mScoresDatabaseReference.removeEventListener(mPlayerMessageListener);
+            mPlayerMessageListener = null;
+        }
+    }
+
+
+    private void goToMatch() {
+
+    }
+
+
+
+}
