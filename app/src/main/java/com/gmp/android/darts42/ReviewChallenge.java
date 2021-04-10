@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.firebase.database.ChildEventListener;
@@ -23,6 +25,7 @@ import java.util.Calendar;
 public class ReviewChallenge extends AppCompatActivity {
 
     private static final String TAG = "ReviewChallenge";
+    public static final String EXTRA_CHALLENGEID = "Challenge_ID";
     public static final String EXTRA_OPPONENTID = "Opponent_ID";
     public static final String EXTRA_MATCHID = "Match_ID";
     public static final String EXTRA_TIMESTAMP = "Timeout";
@@ -42,19 +45,22 @@ public class ReviewChallenge extends AppCompatActivity {
     private CommonData commonData;
 
     private TextView reviewCountdown;
-    private CountDownTimer mcountDownTimer;
     private Calendar timeNowCalendar;
-    private final Long challengeTimeout = (long) 20 * 1000; //Challenge timeout in milliseconds
+    private final Long challengeTimeout = (long) 18000 * 1000; //Challenge timeout in milliseconds
 
+    private Button acceptChallengeButton;
+    private Button declineChallengeButton;
 
+    private CountDownTimer messageCountdownTimer;
+    private CountDownTimer reviewCountdownTimer;
 
 
     Match matchDetails;
     PlayerProfile challengerProfile;
 
-    final TextView challengerDetails = (TextView)findViewById(R.id.tvChallengerDetails);
-    final TextView setsLegs = (TextView)findViewById(R.id.tvSetsLegs);
-    final TextView startDoubles = (TextView)findViewById(R.id.tvStartDoubles);
+    TextView challengerDetails;
+    TextView setsLegs;
+    TextView startDoubles;
 
 
     @Override
@@ -67,10 +73,22 @@ public class ReviewChallenge extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance();
         commonData = CommonData.getInstance();
 
+        challengerDetails = (TextView)findViewById(R.id.tvChallengerDetails);
+        setsLegs = (TextView)findViewById(R.id.tvSetsLegs);
+        startDoubles = (TextView)findViewById(R.id.tvStartDoubles);
+
+        acceptChallengeButton = (Button)findViewById(R.id.btAccept);
+        acceptChallengeButton.setEnabled(false);
+        declineChallengeButton = (Button)findViewById(R.id.btDecline);
+        declineChallengeButton.setEnabled(false);
+
+
         mUid = commonData.getHomeUserID();
 
 
 
+
+        challengeMessageID = (String) getIntent().getExtras().get(EXTRA_CHALLENGEID);
         challengerID = (String) getIntent().getExtras().get(EXTRA_OPPONENTID);
         matchID = (String) getIntent().getExtras().get(EXTRA_MATCHID);
         timestamp = (long) getIntent().getExtras().get(EXTRA_TIMESTAMP);
@@ -83,78 +101,100 @@ public class ReviewChallenge extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                Log.d(TAG, "User profile found");
-                challengerProfile = snapshot.getValue(PlayerProfile.class);
+                for (DataSnapshot profileChildSnapshot : snapshot.getChildren()) {
 
-           }
+                    challengerProfile = profileChildSnapshot.getValue(PlayerProfile.class);
+                    Log.d(TAG, "User profile found");
 
+                    //Get the match details
+                    matchReference = mDatabase.getReference("matches");
+                    Query matchData = matchReference.orderByKey().equalTo(matchID).limitToFirst(1);
+                    matchData.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                            //Not checking for non-null snapshot as the match record should be there
+                            for (DataSnapshot matchChildSnapshot : snapshot.getChildren()) {
+
+                                matchDetails = matchChildSnapshot.getValue(Match.class);
+                                Log.d("MainActivity", "Match data found");
+
+                                //Display all the details
+                                startDoubleString = "Start from " + Integer.toString(matchDetails.getStartingPoints()) + ", ";
+                                if (matchDetails.getStartWithDouble()) {
+                                    startDoubleString = startDoubleString + "double to start, ";
+                                } else {
+                                    startDoubleString = startDoubleString + "straight start, ";
+                                }
+                                if (matchDetails.getEndWithDouble()) {
+                                    startDoubleString = startDoubleString + "double to finish";
+                                } else {
+                                    startDoubleString = startDoubleString + "straight finish";
+                                }
+
+                                challengerDetails.setText(challengerProfile.getPlayerName() + " has challenged you to a match:");
+                                setsLegs.setText("Best of "
+                                        + Integer.toString(matchDetails.getBestOfSets())
+                                        + " set(s), each best of "
+                                        + Integer.toString(matchDetails.getBestOfLegs())
+                                        + " legs");
+                                startDoubles.setText(startDoubleString);
+                                declineChallengeButton.setEnabled(true);
+                                acceptChallengeButton.setEnabled(true);
+                                setReviewCountDownTimer();
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+
+
+                }
+            }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
-
-        //Now get the match details. Do this sequentially after getting the challenger profile
-        //We may find that they are actually retrieved in reverse order.
-        //Or we may have to nest them
-
-        //Get the match details
-        matchReference=mDatabase.getReference("matches");
-        Query matchData = matchReference.orderByKey().equalTo(matchID).limitToFirst(1);
-        matchData.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                Log.d("MainActivity", "Match data found");
-                matchDetails = snapshot.getValue(Match.class);
-
-          }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-        //Display all the details
-        startDoubleString = "Start from "+Integer.toString(matchDetails.getStartingPoints())+", ";
-        if (matchDetails.getStartWithDouble()) {
-            startDoubleString = startDoubleString + "double to start, ";
-        }
-        else {
-            startDoubleString = startDoubleString + "straight start, ";
-        }
-        if (matchDetails.getEndWithDouble()) {
-            startDoubleString = startDoubleString + "double to finish";
-        }
-        else {
-            startDoubleString = startDoubleString + "straight finish";
-        }
-
-        challengerDetails.setText(challengerProfile.getPlayerName() + " has challenged you to a match:");
-        setsLegs.setText("Best of "
-                +Integer.toString(matchDetails.getBestOfSets())
-                + " set(s), each best of "
-                +Integer.toString(matchDetails.getBestOfLegs())
-                +" legs");
-        startDoubles.setText(startDoubleString);
-
 
     }
 
     public void challengeAccepted(View view) {
+
+        //Kill the timer
+        stopReviewCountDownTimer();
+
+        //Stop the user from pressing anymore buttons
+        acceptChallengeButton.setEnabled(false);
+        declineChallengeButton.setEnabled(false);
+
+        //
         deleteChallenge();
+
+        displayNewGameMessage("Challenge accepted. Starting match ...");
         //TODO: if the challenge hasn't expired then start match
         //TODO: otherwise tell the user and go back to the home screen
-        startMatch();
     }
 
     public void challengeDeclined(View view) {
+
+        //Kill the timer
+        stopReviewCountDownTimer();
+
+        //Stop the user from pressing anymore buttons
+        acceptChallengeButton.setEnabled(false);
+        declineChallengeButton.setEnabled(false);
+
         //Delete the challenge record from messages and then send a decline message to the challenger
         deleteChallenge();
-        //TODO: if the challenge hasn't expired then decline it
-        //TODO: otherwise tell the user and go back to the home screen
         sendDecline(challengerID,matchID);
+
+        //TODO: set status before returning to Home screen
+        finish();
 
     }
 
@@ -165,8 +205,9 @@ public class ReviewChallenge extends AppCompatActivity {
     }
 
     private void deleteChallenge() {
-        playerProfileReference = mDatabase.getReference("player_profiles").child(challengeMessageID);
-        playerProfileReference.removeValue();
+        DatabaseReference playerMessageReference;
+        playerMessageReference = mDatabase.getReference("player_messages").child(mUid).child(challengeMessageID);
+        playerMessageReference.removeValue();
     }
 
     private void startMatch() {
@@ -203,11 +244,11 @@ public class ReviewChallenge extends AppCompatActivity {
 
     }
 
-    private void setCountDownTimer() {
+    private void setReviewCountDownTimer() {
         reviewCountdown = (TextView)findViewById(R.id.tvReviewCountdown);
         //challengeCountdown.setVisibility(View.VISIBLE);
         timeNowCalendar = Calendar.getInstance();
-        mcountDownTimer = new CountDownTimer(timestamp+challengeTimeout-timeNowCalendar.getTimeInMillis(), 1000) {
+        reviewCountdownTimer = new CountDownTimer(timestamp+challengeTimeout-timeNowCalendar.getTimeInMillis(), 1000) {
 
             @Override
             public void onTick(long millisUntilFinished) {
@@ -230,12 +271,59 @@ public class ReviewChallenge extends AppCompatActivity {
             public void onFinish() {
                 //Countdown timer has fired so the challenge has expired
                 reviewCountdown.setText("");
+
+                //Stop the user from pressing anymore buttons
+                acceptChallengeButton.setEnabled(false);
+                declineChallengeButton.setEnabled(false);
+
+                //TODO: Tell the user
+
+                //Delete the challenge record
                 deleteChallenge();
-                //challengeCountdown.setVisibility(View.GONE);
 
             }
         };
-        mcountDownTimer.start();
+        reviewCountdownTimer.start();
     }
 
-}
+    private void stopReviewCountDownTimer() {
+        reviewCountdown.setText("");
+        reviewCountdownTimer.cancel();
+    }
+
+    private void setMessageCountdownTimer() {
+        messageCountdownTimer = new CountDownTimer(10000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+            startMatch();
+
+            }
+        };
+        messageCountdownTimer.start();
+    }
+
+    private void displayNewGameMessage(String textToDisplay) {
+        reviewCountdown.setVisibility(View.VISIBLE);
+        reviewCountdown.setText(textToDisplay);
+        setMessageCountdownTimer();
+        reviewCountdown.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                messageCountdownTimer.cancel();
+                startMatch();
+                return false;
+            }
+        });
+
+    }
+
+
+
+    }
+
+

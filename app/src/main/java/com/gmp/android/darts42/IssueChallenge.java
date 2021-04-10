@@ -10,6 +10,7 @@ import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,6 +30,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class IssueChallenge extends AppCompatActivity {
@@ -38,8 +40,8 @@ public class IssueChallenge extends AppCompatActivity {
     private Button checkOpponentButton;
     private EditText mMessageEditText;
 
-    private final Integer challengeTimeout = 20 * 1000;
-    private final Integer challengeTimeoutMargin = 5 * 1000;
+    private final Integer challengeTimeout = 18000 * 1000;
+    private final Integer challengeTimeoutMargin = 30 * 1000;
 
     public FirebaseDatabase mScoresDatabase;
     private DatabaseReference mScoresDatabaseReference;
@@ -69,6 +71,7 @@ public class IssueChallenge extends AppCompatActivity {
     private PlayerProfile awayProfile;
 
     private CountDownTimer mcountDownTimer;
+    private CountDownTimer messageCountdownTimer;
 
     private ChildEventListener mPlayerMessageListener;
 /*
@@ -83,6 +86,8 @@ public class IssueChallenge extends AppCompatActivity {
     private TextView challengeCountdown;
 
     private String awayEMail;
+
+    private Boolean challengeAccepted;
 
     String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
     //String emailPattern = "[a-zA-Z0-9]";
@@ -216,16 +221,19 @@ public class IssueChallenge extends AppCompatActivity {
         newMatchKey = mScoresDatabaseReference.push().getKey();
         mScoresDatabaseReference.child(newMatchKey).setValue(newMatchDetails);
 
-        mScoresDatabaseReference = mScoresDatabase.getReference("player_messages/"+founduserid+"/"
-        );
-        //Write out the player message with a 0 timestamp
-        PlayerMessage playerMessage = new PlayerMessage(101,newMatchKey,mUid,(long) 0);
-        String tempKey = mScoresDatabaseReference.push().getKey();
-        mScoresDatabaseReference.child(tempKey).setValue(playerMessage);
-        //Now update the time stamp with the server time - this is the only way I could make this work
-        //while keeping the timestamp as a Long
+        mScoresDatabaseReference = mScoresDatabase.getReference("player_messages/" + founduserid + "/");
+        //Write out the player message
+        /* A word about timestamps. In theory, we should use server time for timestamps and timeouts. However, although
+        I worked out how to write a server timestamp, I struggled to get current server time at the client end. There
+        is some documentation about looking at time drift between server and client but I decided, for simplicity at this stage,
+        I'd just use client time all the way through. This could lead to problems if client clocks were wildly out of sync,
+        but timeouts should be long enough for this not to be noticeable.
+        For future reference:
         mScoresDatabaseReference.child(tempKey).child("timestamp").setValue(ServerValue.TIMESTAMP);
-        }
+        */
+        PlayerMessage playerMessage = new PlayerMessage(101, newMatchKey, mUid, Calendar.getInstance().getTimeInMillis());
+        mScoresDatabaseReference.push().setValue(playerMessage);
+    }
 
     public void checkOpponent(View view) {
 
@@ -336,14 +344,14 @@ public class IssueChallenge extends AppCompatActivity {
                        //Player declines
                        //Delete the message
                        mScoresDatabaseReference.child(dataSnapshot.getKey()).removeValue();
-
-                       //then get out
-                       handleNegativeResponse();
+                       challengeAccepted = false;
+                       displayNewGameMessage(awayProfile.getPlayerNickName()+ " does not want to play.");
                    }
                    else
                    {
                        //Assume that it's a Yes (message type 2), and go to play the match
-                       goToMatch();
+                       challengeAccepted = true;
+                       displayNewGameMessage(awayProfile.getPlayerNickName()+" has accepted your challenge. Game on!");
                    }
                 }
 
@@ -392,7 +400,8 @@ public class IssueChallenge extends AppCompatActivity {
                 //Stop listening for messages and then tidy up
                 challengeCountdown.setText("");
                 detachPlayerMessageListener();
-                handleNegativeResponse();
+                challengeAccepted = false;
+                displayNewGameMessage(awayProfile.getPlayerNickName()+" has not responded.");
                 //challengeCountdown.setVisibility(View.GONE);
 
             }
@@ -406,11 +415,8 @@ public class IssueChallenge extends AppCompatActivity {
     }
 
     private void handleNegativeResponse() {
-        //The opponent has either declined the challenge or hasn't responded
-        //Tell the challenger and then tidy up
 
-            Snackbar snackbar = Snackbar.make(challengeCountdown,awayProfile.getPlayerNickName()+" does not want to play",Snackbar.LENGTH_LONG);
-            snackbar.show();
+        //The opponent has either declined the challenge or hasn't responded
 
             //Delete the match record
             mScoresDatabaseReference = mScoresDatabase.getReference("matches");
@@ -422,6 +428,7 @@ public class IssueChallenge extends AppCompatActivity {
             mScoresDatabaseReference = mScoresDatabase.getReference("player_profiles");
             mScoresDatabaseReference.child(mUid).child("playerEngaged").setValue(false);
 
+            finish();
 
     }
 
@@ -438,6 +445,48 @@ public class IssueChallenge extends AppCompatActivity {
     private void goToMatch() {
 
     }
+
+
+    private void setMessageCountdownTimer() {
+        messageCountdownTimer = new CountDownTimer(10000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                if (challengeAccepted) {
+                    goToMatch();
+                }
+                else {
+                    handleNegativeResponse();
+                }
+            }
+        };
+        messageCountdownTimer.start();
+    }
+
+    private void displayNewGameMessage(String textToDisplay) {
+        challengeCountdown.setVisibility(View.VISIBLE);
+        challengeCountdown.setText(textToDisplay);
+        setMessageCountdownTimer();
+        challengeCountdown.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                messageCountdownTimer.cancel();
+                if (challengeAccepted) {
+                    goToMatch();
+                }
+                else {
+                    handleNegativeResponse();
+                }
+                return false;
+            }
+        });
+
+    }
+
 
 
 

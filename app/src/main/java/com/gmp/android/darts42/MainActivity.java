@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_OPPONENTID = "Opponent_ID";
     public static final String EXTRA_MATCHID = "Match_ID";
 
-    private final Long challengeTimeout = (long) 20 * 1000; //Challenge timeout in milliseconds
+    private final Long challengeTimeout = (long) 18000 * 1000; //Challenge timeout in milliseconds
 
 
 
@@ -118,12 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("MainActivity", "User signed in");
                     onSignedInInitialize(user.getDisplayName(), user.getUid(), user.getEmail());
 
-                    buttonState = 100;
-                    setButton(buttonState);
 
-
-                    //make sure that we're listening for messages at the right level
-                    mDatabaseReference = mDatabaseReference.child(mUid);
                     attachPlayerMessageListener();
 
                     //TODO: Set the button to default state of set up new game
@@ -187,6 +182,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        else { //We've come from somewhere else (not sign-in). For the time being, just start again
+
+            mDatabaseReference = mDatabaseReference.child(mUid);
+            attachPlayerMessageListener();
+
+        }
     }
 
 
@@ -298,6 +299,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void attachPlayerMessageListener() {
+
+        //Set default state - listening for messages
+        buttonState = 100;
+        setButton(buttonState);
+
         if (mPlayerMessageListener == null) {
             mPlayerMessageListener = new ChildEventListener() {
                 @Override
@@ -314,7 +320,9 @@ public class MainActivity extends AppCompatActivity {
                         messageID = dataSnapshot.getKey();
 
 
-                        Log.d(TAG, "Player message of type "
+                        Log.d(TAG, "Player message "
+                                + messageID
+                                + " of type "
                                 + buttonState
                                 + " with payload "
                                 + matchID
@@ -339,6 +347,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onCancelled(DatabaseError databaseError) {
                 }
             };
+            //make sure that we're listening for messages at the right level
+            mDatabaseReference = mDatabase.getReference().child("player_messages").child(mUid);
+            //attach the listener
             mDatabaseReference.addChildEventListener(mPlayerMessageListener);
 
         }
@@ -362,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (buttonState) {
             case 100: //Nothing happening
+                actionButton.setEnabled(true);
                 break;
 
 
@@ -369,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
                 //Check the timestamp
                 timeNowCalendar = Calendar.getInstance();
                 //timeoutCalendar.setTimeInMillis(timeStampLong+challengeTimeout);
-                Log.d(TAG, "Now: " + Long.toString(timeNowCalendar.getTimeInMillis()) + " Timeout: "+ Long.toString(timeStampLong+challengeTimeout);
+                Log.d(TAG, "Now: " + timeNowCalendar.getTimeInMillis() + " Timeout: "+ timeStampLong+challengeTimeout);
                 if (timeNowCalendar.getTimeInMillis() >= (timeStampLong+challengeTimeout)) { //Expired so ignore and delete the message
                     mDatabaseReference = mDatabase.getReference().child("player_messages").child(mUid).child(messageID);
                     mDatabaseReference.removeValue();
@@ -377,6 +389,7 @@ public class MainActivity extends AppCompatActivity {
                 else { //Still current
                     whatsHappeningText.setText("You have received a challenge from another player");
                     actionButton.setText("Review challenge");
+                    actionButton.setEnabled(true);
                 }
                 break;
 
@@ -385,16 +398,17 @@ public class MainActivity extends AppCompatActivity {
                 //TODO Elaborate
                 whatsHappeningText.setText("You are playing a match");
                 actionButton.setText("Continue match");
+                actionButton.setEnabled(true);
                 break;
 
             case 103: //Stray decline message
                 //Delete the message
                 mDatabaseReference = mDatabase.getReference().child("player_messages").child(mUid).child(messageID);
                 mDatabaseReference.removeValue();
+                break;
+
         }
 
-
-        actionButton.setEnabled(true);
     }
 
     public void onClick(View view) {
@@ -435,6 +449,7 @@ public class MainActivity extends AppCompatActivity {
             detachPlayerMessageListener();
             Intent intent1;
             intent1 = new Intent(MainActivity.this, ReviewChallenge.class);
+            intent1.putExtra(ReviewChallenge.EXTRA_CHALLENGEID, (String) messageID );
             intent1.putExtra(ReviewChallenge.EXTRA_MATCHID, (String) matchID );
             intent1.putExtra(ReviewChallenge.EXTRA_OPPONENTID, (String) opponentID);
             intent1.putExtra(ReviewChallenge.EXTRA_TIMESTAMP,(long)timeStampLong);
@@ -600,7 +615,7 @@ public class MainActivity extends AppCompatActivity {
                 return tempName;
             } else
                 //Otherwise take the substring up to, but not including, the first space
-                return tempName.substring(0, tempIndex - 1);
+                return tempName.substring(0, tempIndex);
         }
     }
         }
