@@ -13,9 +13,12 @@ import java.util.List;
 
 public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
 
+    //Recycler implementation cribbed from https://stackoverflow.com/questions/40584424/simple-android-recyclerview-example
+
     private List<String> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+
 
     // data is passed into the constructor
     MyRecyclerViewAdapter(Context context, List<String> data) {
@@ -35,7 +38,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         String score = mData.get(position);
-
+        //4 cells to a row. First two cells are right justified, last two are left justified
         int cell = (position % 4);
 
         if ((cell == 0) || (cell == 1)) {

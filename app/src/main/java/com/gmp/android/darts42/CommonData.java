@@ -9,7 +9,7 @@ public class CommonData {
     private String homeUserNickname;
     public String getHomeUserID() {return homeUserID;}
     public void setHomeUserID(String data) {this.homeUserID = data;}
-    public String getHomeUserNicknameID() {return homeUserNickname;}
+    public String getHomeUserNickname() {return homeUserNickname;}
     public void setHomeUserNickname(String data) {this.homeUserNickname = data;}
 
     private static final CommonData holder = new CommonData();
