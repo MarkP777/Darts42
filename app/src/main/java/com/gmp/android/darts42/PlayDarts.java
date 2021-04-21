@@ -28,6 +28,7 @@ import org.w3c.dom.Text;
 
 import java.text.Format;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PlayDarts extends AppCompatActivity {
 
@@ -44,6 +45,11 @@ public class PlayDarts extends AppCompatActivity {
     Integer theirTotalScore;
     Boolean iHaveStarted;
     Boolean theyHaveStarted;
+
+    Integer scoreThisTurn;
+    Integer scoreThisDart;
+    Boolean bustThisThrow;
+    Boolean wonLegThisThrow;
 
 
 
@@ -76,11 +82,11 @@ public class PlayDarts extends AppCompatActivity {
     private Integer startingPoints;
     private Boolean startWithDouble;
     private Boolean endWithDouble;
-    private Integer[] setsScore = new Integer[2];
-    private Integer[] legsScore = new Integer[2];
+    private List<Integer> setScores = new ArrayList<>();
+    private List<Integer> legScores = new ArrayList<>();
     private Integer myScoreIndex;
     private Integer theirScoreIndex;
-    private Boolean iAmPlayer1;
+    private Boolean iAmPlayer0;
 
     private Boolean myGoNext;
 
@@ -169,12 +175,12 @@ public class PlayDarts extends AppCompatActivity {
                         Log.d(TAG, "Match data found");
 
                         //TODO: unwrap the match record
-                        if (matchDetails.getPlayer1Id().equals(myUId)) {
-                            iAmPlayer1 = true;
+                        if (matchDetails.getPlayer0Id().equals(myUId)) {
+                            iAmPlayer0 = true;
                             myScoreIndex = 0;
                             theirScoreIndex = 1;
                         } else {
-                            iAmPlayer1 = false;
+                            iAmPlayer0 = false;
                             myScoreIndex = 1;
                             theirScoreIndex = 0;
                         }
@@ -183,10 +189,8 @@ public class PlayDarts extends AppCompatActivity {
                         startingPoints = matchDetails.getStartingPoints();
                         startWithDouble = matchDetails.getStartWithDouble();
                         endWithDouble = matchDetails.getEndWithDouble();
-                        setsScore[0] = matchDetails.getPlayer1Sets();
-                        setsScore[1] = matchDetails.getPlayer2Sets();
-                        legsScore[0] = matchDetails.getPlayer1Legs();
-                        legsScore[1] = matchDetails.getPlayer2Legs();
+                        setScores = matchDetails.getSetScores();
+                        legScores = matchDetails.getLegScores();
 
                         //Now get the opponent details
                         getOpponentDetails();
@@ -359,10 +363,10 @@ public class PlayDarts extends AppCompatActivity {
             //Set up the top section. "I" am always on the left
             lName.setText(myNickname);
             rName.setText(theirNickname);
-            lSets.setText(String.format("%1$d",setsScore[myScoreIndex]));
-            rSets.setText(String.format("%1$d",setsScore[theirScoreIndex]));
-            lLegs.setText(String.format("%1$d",legsScore[myScoreIndex]));
-            rLegs.setText(String.format("%1$d",legsScore[theirScoreIndex]));
+            lSets.setText(String.format("%1$d",setScores.get(myScoreIndex)));
+            rSets.setText(String.format("%1$d",setScores.get(theirScoreIndex)));
+            lLegs.setText(String.format("%1$d",legScores.get(myScoreIndex)));
+            rLegs.setText(String.format("%1$d",legScores.get(theirScoreIndex)));
             
             //Clear the bottom section
             scoreSection.setVisibility(View.INVISIBLE);
@@ -433,13 +437,10 @@ public class PlayDarts extends AppCompatActivity {
                     3) it's "their" score
                      */
 
-                        if (iAmPlayer1) {
-                            myScoreIndex = scoreRecord.getPlayer1TotalScore();
-                            iHaveStarted = scoreRecord.getPlayer1HasStarted();
-                        }
+                        myTotalScore = scoreRecord.getTotalScore().get(myScoreIndex);
+                        iHaveStarted = scoreRecord.getHasStarted().get(myScoreIndex);
 
-                        //Seed record because the total score is negative
-                        if ( < 0) {
+                        if (scoreRecord.getThrowScore() < 0) { //Seed record because the total score is negative
                             scoreLinesIn4Columns.add("");
                             scoreLinesIn4Columns.add(Integer.toString(startingPoints));
                             scoreLinesIn4Columns.add(Integer.toString(startingPoints));
@@ -449,15 +450,6 @@ public class PlayDarts extends AppCompatActivity {
                                 myGoNext = false;
                             } else {
                                 myGoNext = true;
-                                myTotalScore = startingPoints;
-                                if (startWithDouble) {
-                                    theyHaveStarted = false;
-                                    iHaveStarted = false;
-                                }
-                                else {
-                                    theyHaveStarted = true;
-                                    iHaveStarted = true;
-                                }
                             }
                         } else {
 
@@ -476,46 +468,39 @@ public class PlayDarts extends AppCompatActivity {
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore()));
                                 scoreLinesIn4Columns.add(scoreRecord.getThrowString());
                                 myGoNext = true; //Me to go
-                                myTotalScore = scoreRecord.getTotalScore();
-                                if (startWithDouble) {
-                                    theyHaveStarted = false;
-                                    iHaveStarted = false;
-                                }
-                                else {
-                                    theyHaveStarted = true;
-                                    iHaveStarted = true;
                             }
+
                         }
+                            //TODO: sort out sets and legs
 
-                        //TODO: sort out sets and legs
+                            //Get all the above on the screen
+                            adapter.notifyItemRangeInserted(adapter.getItemCount(), 4);
+                            recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
-                        //Get all the above on the screen
-                        adapter.notifyItemRangeInserted(adapter.getItemCount(), 4);
-                        recyclerView.scrollToPosition(adapter.getItemCount() - 1);
+                            //Get next input
+                            if (myGoNext) {
+                                threeDarts();
+                            }
 
-                        //Get next input
-                        if (myGoNext) {
-                            threeDarts();
-                        }
+                            //Write out the score record - must do this last so that the listener
+                            //does not trigger before everything is done
+                            //TODO: score record
 
-                        //Write out the score record - must do this last so that the listener
-                        //does not trigger before everything is done
-                        //TODO: score record
 
                     }
+                        public void onChildChanged (DataSnapshot dataSnapshot, String s){
+                        }
 
-    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-    }
+                        public void onChildRemoved (DataSnapshot dataSnapshot){
+                        }
 
-    public void onChildRemoved(DataSnapshot dataSnapshot) {
-    }
+                        public void onChildMoved (DataSnapshot dataSnapshot, String s){
+                        }
 
-    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-    }
+                        public void onCancelled (DatabaseError databaseError){
+                        }
+                    };
 
-    public void onCancelled(DatabaseError databaseError) {
-    }
-};
                 //And don't forget to enable the listener!!
                 scoresDataBaseReference.addChildEventListener(scoresChildEventListener);
 
@@ -580,40 +565,15 @@ public class PlayDarts extends AppCompatActivity {
 
 
         //Turn finished
+        //TODO: This is not quite right. Need to get the messages on the screen earlier, I think
         scoreSection.setVisibility(View.INVISIBLE);
         waitingMessage.setText(theirNickname + "'s go. Please wait ...");
         waitingMessage.setVisibility(View.VISIBLE);
 
 
-    } //Ends threeThrows()
+    } //Ends threeDarts()
 
 
-// The dialog fragment receives a reference to this Activity through the
-// Fragment.onAttach() callback, which it uses to call the following methods
-// defined by the NoticeDialogFragment.NoticeDialogListener interface
-@Override
-public void onDialogPositiveClick(DialogFragment dialog){
-
-        /*
-        //if (BuildConfig.DEBUG) Log.w(TAG,"Returned positive from alert dialog");
-
-        // User touched the dialog's positive button, so initialise a new game
-
-        mScoresDatabaseReference = mScoresDatabase.getReference("scores");
-
-        //Remove the whole of the scores branch
-        mScoresDatabaseReference.removeValue();
-
-        //Recreate the score branch and seed it with a blank record, which forces user 1 to go next
-        mScoresDatabaseReference = mScoresDatabase.getReference().child("scores");
-        Score score = new Score(-1,-1,mUsername);
-        mScoresDatabaseReference.push().setValue(score);
-
-        // Attach the listener after everything has been set up
-        attachDatabaseReadListener();
-*/
-
-        }
 
         public void getDart1(View view) {
 
@@ -627,12 +587,43 @@ public void onDialogPositiveClick(DialogFragment dialog){
             dart.analyse(d1Input.toString().trim());
 
             throwString = dart.string;
+            bustThisThrow = false;
+            wonLegThisThrow = false;
+            scoreThisDart = dart.score;
+            scoreThisTurn = scoreThisDart;
 
+            //Starting conditions
+            if (!iHaveStarted) { //I haven't started, so I must need a double to start
+                if (dart.isDouble) {
+                    iHaveStarted = true;}
+                else {
+                    scoreThisDart = 0;} //Not a double so scores 0
+            }
 
+            //Finishing conditions
+            if (endWithDouble) { //Double needed to finish
+                if (scoreThisTurn > totalScore) { //Double needed, but I threw too much
+                    bustThisThrow = true;
+                    scoreThisDart = 0;
+                    scoreThisTurn = 0;
+                }
+                else if (scoreThisDart == totalScore)  { //Double needed, and I threw exactly what was needed
+                    if (dart.isDouble) { //it was a double, so I won
+                        wonLegThisThrow = true;
+                    }
+                    else { //it wasn't a double, so I'm bust
+                        bustThisThrow = true;
+                        scoreThisDart = 0;
+                        scoreThisTurn = 0;
+                    }
+                }
+            } else { //Double not needed to finish
+                if (scoreThisTurn >= totalScore) { //I get to the finishing point, so I win
+                    wonLegThisThrow = true;
+                }
+            }
 
-
-
-        }
+        } //Ends getDart1
 
 
 

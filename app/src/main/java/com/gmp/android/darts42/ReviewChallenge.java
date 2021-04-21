@@ -20,6 +20,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 
 public class ReviewChallenge extends AppCompatActivity {
@@ -223,7 +225,13 @@ public class ReviewChallenge extends AppCompatActivity {
 
         //write a seed record to the scores table
         DatabaseReference scoreDatabaseReference = mDatabase.getReference("scores").child(matchID);
-        Score seedScore = new Score(lastThrower,"",0,-1);
+        Score seedScore = new Score(
+                lastThrower,
+                "",
+                -1,
+                new ArrayList<Integer>(Arrays.asList(new Integer[]{matchDetails.getStartingPoints(), matchDetails.getStartingPoints()})),
+                new ArrayList<Boolean>(Arrays.asList(new Boolean[]{!matchDetails.getStartWithDouble(),!matchDetails.getStartWithDouble()}))
+        );
         scoreDatabaseReference.push().setValue(seedScore);
 
         //write game in progress messages to the challenger and oneself

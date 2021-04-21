@@ -1,7 +1,70 @@
 package com.gmp.android.darts42;
 
+import java.util.List;
+
 public class Score {
-    
+
+    private String thrower;
+    private String throwString;
+    private Integer throwScore;
+    private List<Integer> totalScore;
+    private List<Boolean> hasStarted;
+
+
+    public Score() {
+    }
+
+    public Score(String thrower, String throwString, Integer throwScore, List<Integer> totalScore, List<Boolean> hasStarted) {
+        this.thrower = thrower;
+        this.throwString = throwString;
+        this.throwScore = throwScore;
+        this.totalScore = totalScore;
+        this.hasStarted = hasStarted;
+    }
+
+    public String getThrower() {
+        return thrower;
+    }
+
+    public String getThrowString() {return throwString;}
+
+    public Integer getThrowScore() {
+        return throwScore;
+    }
+
+    public List<Integer> getTotalScore() {
+        return totalScore;
+    }
+
+    public List<Boolean> getHasStarted() {
+        return hasStarted;
+    }
+
+
+    public void setThrower(String thrower) {
+        this.thrower = thrower;
+    }
+
+    public void setThrowString(String throwString) {
+        this.throwString = throwString;
+    }
+
+    public void setThrowScore(Integer throwScore) {
+        this.throwScore = throwScore;
+    }
+
+    public void setTotalScore(List<Integer> totalScore) {
+        this.totalScore = totalScore;
+    }
+
+    public void setHasStarted(List<Boolean> hasStarted) {
+        this.hasStarted = hasStarted;
+    }
+}
+
+/*
+public class Score {
+
     private String thrower;
     private String throwString;
     private Integer throwScore;
@@ -62,3 +125,5 @@ public class Score {
 
     public void setPlayer2HasStarted(Boolean player2HasStarted) {this.player2HasStarted = player2HasStarted;}
 }
+
+ */

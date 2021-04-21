@@ -30,8 +30,11 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class IssueChallenge extends AppCompatActivity {
 
@@ -289,6 +292,7 @@ public class IssueChallenge extends AppCompatActivity {
 
     public void sendChallenge(View view) {
 
+
         //Construct match details
         matchToPlay = new Match(
                 mUid,
@@ -298,7 +302,9 @@ public class IssueChallenge extends AppCompatActivity {
                 Integer.valueOf(startValues[startSpinner.getSelectedItemPosition()].trim()),
                 doubleToStartSwitch.isChecked(),
                 doubleToFinishSwitch.isChecked(),
-                0,0,0,0);
+                new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0})),
+                new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0}))
+                );
 
         //Set challenger's status to busy
         mScoresDatabaseReference = mScoresDatabase.getReference("player_profiles");
