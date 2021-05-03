@@ -9,17 +9,23 @@ public class Score {
     private Integer throwScore;
     private List<Integer> totalScore;
     private List<Boolean> hasStarted;
+    private List<Integer> setScores;
+    private List<Integer> legScores;
+    private Boolean legFinished;
 
 
     public Score() {
     }
 
-    public Score(String thrower, String throwString, Integer throwScore, List<Integer> totalScore, List<Boolean> hasStarted) {
+    public Score(String thrower, String throwString, Integer throwScore, List<Integer> totalScore, List<Boolean> hasStarted, List<Integer> setScores, List<Integer> legScores, Boolean legFinished) {
         this.thrower = thrower;
         this.throwString = throwString;
         this.throwScore = throwScore;
         this.totalScore = totalScore;
         this.hasStarted = hasStarted;
+        this.setScores = setScores;
+        this.legScores = legScores;
+        this.legFinished = legFinished;
     }
 
     public String getThrower() {
@@ -40,6 +46,11 @@ public class Score {
         return hasStarted;
     }
 
+    public List<Integer> getSetScores() { return setScores; }
+
+    public List<Integer> getLegScores() { return legScores; }
+
+    public Boolean getLegFinished() { return legFinished; }
 
     public void setThrower(String thrower) {
         this.thrower = thrower;
@@ -60,6 +71,12 @@ public class Score {
     public void setHasStarted(List<Boolean> hasStarted) {
         this.hasStarted = hasStarted;
     }
+
+    public void setSetScores(List<Integer> setScores) { this.setScores = setScores;}
+
+    public void setLegScores(List<Integer> legScores) {this.legScores = legScores; }
+
+    public void setLegFinished(Boolean legFinished) {this.legFinished = legFinished; }
 }
 
 /*

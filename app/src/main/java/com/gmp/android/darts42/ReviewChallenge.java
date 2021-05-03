@@ -230,8 +230,11 @@ public class ReviewChallenge extends AppCompatActivity {
                 "",
                 -1,
                 new ArrayList<Integer>(Arrays.asList(new Integer[]{matchDetails.getStartingPoints(), matchDetails.getStartingPoints()})),
-                new ArrayList<Boolean>(Arrays.asList(new Boolean[]{!matchDetails.getStartWithDouble(),!matchDetails.getStartWithDouble()}))
-        );
+                new ArrayList<Boolean>(Arrays.asList(new Boolean[]{!matchDetails.getStartWithDouble(),!matchDetails.getStartWithDouble()})),
+                new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0})),
+                new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0})),
+                false
+                );
         scoreDatabaseReference.push().setValue(seedScore);
 
         //write game in progress messages to the challenger and oneself

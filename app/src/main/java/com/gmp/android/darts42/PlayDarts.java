@@ -35,6 +35,8 @@ public class PlayDarts extends AppCompatActivity {
 
     private static final String TAG = "PlayDarts";
 
+    private static final String scorePattern = "^([bim]{1})|^(^[dt]?[12]{1}[0]{1})|^(^[dt]?[1]?[1-9]{1})";
+
     CommonData commonData;
     String myUId;
     String myNickname;
@@ -50,6 +52,7 @@ public class PlayDarts extends AppCompatActivity {
     Integer scoreThisDart;
     Boolean bustThisThrow;
     Boolean wonLegThisThrow;
+    Boolean legFinished;
 
 
 
@@ -58,6 +61,31 @@ public class PlayDarts extends AppCompatActivity {
     ChildEventListener scoresChildEventListener;
 
     RecyclerView recyclerView;
+
+
+
+    TextView lSets;
+    TextView rSets;
+    TextView lLegs;
+    TextView rLegs;
+    TextView lName;
+    TextView rName;
+
+    TextView d1ScoreThisDart;
+    TextView d1ScoreThisTurn;
+    TextView d1ScoreTotal;
+    TextView d2ScoreThisDart;
+    TextView d2ScoreThisTurn;
+    TextView d2ScoreTotal;
+    TextView d3ScoreThisDart;
+    TextView d3ScoreThisTurn;
+    TextView d3ScoreTotal;
+
+    Button d1Send;
+    Button d2Send;
+    Button d3Send;
+
+
 
     Group scoreSection;
     Group d1Section;
@@ -82,8 +110,10 @@ public class PlayDarts extends AppCompatActivity {
     private Integer startingPoints;
     private Boolean startWithDouble;
     private Boolean endWithDouble;
+    private List<Integer> totalScore = new ArrayList<>();
     private List<Integer> setScores = new ArrayList<>();
     private List<Integer> legScores = new ArrayList<>();
+    private List<Boolean> hasStarted = new ArrayList<>();
     private Integer myScoreIndex;
     private Integer theirScoreIndex;
     private Boolean iAmPlayer0;
@@ -94,9 +124,6 @@ public class PlayDarts extends AppCompatActivity {
     Score score = new Score();
     String throwString;
 
-
-
-    Integer totalScore = 0;
 
     MyRecyclerViewAdapter adapter;
 
@@ -118,6 +145,44 @@ public class PlayDarts extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_darts);
         fbDatabase = FirebaseDatabase.getInstance();
+
+        //Find all the elements of the screen
+        lSets = (TextView) findViewById(R.id.tvlSets);
+        rSets = (TextView) findViewById(R.id.tvrSets);
+        lLegs = (TextView) findViewById(R.id.tvlLegs);
+        rLegs = (TextView) findViewById(R.id.tvrLegs);
+        lName = (TextView) findViewById(R.id.tvlName);
+        rName = (TextView) findViewById(R.id.tvrName);
+        waitingMessage = (TextView) findViewById(R.id.tvWaitingMessage);
+        gameMessage = (TextView) findViewById(R.id.tvGameMessage);
+
+        d1ScoreThisDart = (TextView) findViewById(R.id.tvd1ScoreThisDart);
+        d1ScoreThisTurn = (TextView) findViewById(R.id.tvd1ScoreThisTurn);
+        d1ScoreTotal = (TextView)  findViewById(R.id.tvd1ScoreTotal);
+        d2ScoreThisDart = (TextView) findViewById(R.id.tvd2ScoreThisDart);
+        d2ScoreThisTurn = (TextView) findViewById(R.id.tvd2ScoreThisTurn);
+        d2ScoreTotal = (TextView)  findViewById(R.id.tvd2ScoreTotal);
+        d3ScoreThisDart = (TextView) findViewById(R.id.tvd3ScoreThisDart);
+        d3ScoreThisTurn = (TextView) findViewById(R.id.tvd3ScoreThisTurn);
+        d3ScoreTotal = (TextView)  findViewById(R.id.tvd3ScoreTotal);
+
+        d1Send = (Button) findViewById(R.id.btd1);
+        d2Send = (Button) findViewById(R.id.btd2);
+        d3Send = (Button) findViewById(R.id.btd3);
+
+
+        scoreSection = (Group) findViewById(R.id.gScoreSection);
+        d1Section = (Group) findViewById(R.id.gd1Section);
+        d2Section = (Group) findViewById(R.id.gd2Section);
+        d3Section = (Group) findViewById(R.id.gd3Section);
+
+        d1Input = (EditText) findViewById(R.id.etd1Input);
+        d2Input = (EditText) findViewById(R.id.etd2Input);
+        d3Input = (EditText) findViewById(R.id.etd3Input);
+
+        setDartInputFilters(d1Input,d1Send);
+        setDartInputFilters(d2Input,d2Send);
+        setDartInputFilters(d3Input,d3Send);
 
         //Get who we are
         commonData = CommonData.getInstance();
@@ -339,25 +404,6 @@ public class PlayDarts extends AppCompatActivity {
 
         private void playGame () {
 
-            //Find all the elements of the screen
-            TextView lSets = (TextView) findViewById(R.id.tvlSets);
-            TextView rSets = (TextView) findViewById(R.id.tvrSets);
-            TextView lLegs = (TextView) findViewById(R.id.tvlLegs);
-            TextView rLegs = (TextView) findViewById(R.id.tvrLegs);
-            TextView lName = (TextView) findViewById(R.id.tvlName);
-            TextView rName = (TextView) findViewById(R.id.tvrName);
-            waitingMessage = (TextView) findViewById(R.id.tvWaitingMessage);
-            gameMessage = (TextView) findViewById(R.id.tvGameMessage);
-
-            scoreSection = (Group) findViewById(R.id.gScoreSection);
-            d1Section = (Group) findViewById(R.id.gd1Section);
-            d2Section = (Group) findViewById(R.id.gd2Section);
-            d3Section = (Group) findViewById(R.id.gd3Section);
-
-            d1Input = (EditText) findViewById(R.id.etd1Input);
-            d2Input = (EditText) findViewById(R.id.etd2Input);
-            d3Input = (EditText) findViewById(R.id.etd3Input);
-
 
 
             //Set up the top section. "I" am always on the left
@@ -437,8 +483,15 @@ public class PlayDarts extends AppCompatActivity {
                     3) it's "their" score
                      */
 
-                        myTotalScore = scoreRecord.getTotalScore().get(myScoreIndex);
-                        iHaveStarted = scoreRecord.getHasStarted().get(myScoreIndex);
+                        totalScore = scoreRecord.getTotalScore();
+                        myTotalScore = totalScore.get(myScoreIndex);
+                        hasStarted = scoreRecord.getHasStarted();
+                        iHaveStarted = hasStarted.get(myScoreIndex);
+                        setScores = scoreRecord.getSetScores();
+                        legScores = scoreRecord.getLegScores();
+                        legFinished = scoreRecord.getLegFinished();
+
+                        //TODO: write out sets and legs
 
                         if (scoreRecord.getThrowScore() < 0) { //Seed record because the total score is negative
                             scoreLinesIn4Columns.add("");
@@ -451,7 +504,7 @@ public class PlayDarts extends AppCompatActivity {
                             } else {
                                 myGoNext = true;
                             }
-                        } else {
+                        } else { //TODO have to handle leg completed
 
                             if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
                                 scoreLinesIn4Columns.add(scoreRecord.getThrowString());
@@ -479,12 +532,8 @@ public class PlayDarts extends AppCompatActivity {
 
                             //Get next input
                             if (myGoNext) {
-                                threeDarts();
+                                getDart1();
                             }
-
-                            //Write out the score record - must do this last so that the listener
-                            //does not trigger before everything is done
-                            //TODO: score record
 
 
                     }
@@ -515,71 +564,41 @@ public class PlayDarts extends AppCompatActivity {
         }// Ends detachScoresListener
 
 
-    private void threeDarts() {
-
-        TextView d2ScoreThisDart = (TextView) findViewById(R.id.tvd2ScoreThisDart);
-        TextView d2ScoreThisTurn = (TextView) findViewById(R.id.tvd2ScoreThisTurn);
-        TextView d2ScoreTotal = (TextView)  findViewById(R.id.tvd2ScoreTotal);
-        TextView d3ScoreThisDart = (TextView) findViewById(R.id.tvd3ScoreThisDart);
-        TextView d3ScoreThisTurn = (TextView) findViewById(R.id.tvd3ScoreThisTurn);
-        TextView d3ScoreTotal = (TextView)  findViewById(R.id.tvd3ScoreTotal);
-
-        Button d1Send = (Button) findViewById(R.id.btd1);
-        Button d2Send = (Button) findViewById(R.id.btd2);
-        Button d3Send = (Button) findViewById(R.id.btd3);
-
-         String scorePattern = "^([bim]{1})|^(^[dt]?[12]{1}[0]{1})|^(^[dt]?[1]?[1-9]{1})";
-
+    private void getDart1() {
 
         d1Section.setEnabled(true);
         d1Send.setEnabled(false);
+        d1Input.requestFocus();
         d2Section.setEnabled(false);
         d3Section.setEnabled(false);
         scoreSection.setVisibility(View.VISIBLE);
 
-        score.setThrower(myUId);
+    } //Ends getDart1()
 
-        d1Input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
+    private void getDart2() {
 
-        d1Input.addTextChangedListener(new TextWatcher() {
-            public void afterTextChanged(Editable s) {
+        d2Section.setEnabled(true);
+        d2Send.setEnabled(false);
+        d2Input.requestFocus();
+        d1Section.setEnabled(false);
+        d3Section.setEnabled(false);
+        scoreSection.setVisibility(View.VISIBLE);
 
-                if (s.toString().matches(scorePattern) && s.length() > 0)
-                {
-                    d1Send.setEnabled(true);
+    } //Ends getDart2()
 
+    private void getDart3() {
 
-                    //TODO: Process the dart
-                }
-                else
-                {
-                    d1Send.setEnabled(false);
-                }
-            }
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-        });
+        d3Section.setEnabled(true);
+        d3Send.setEnabled(false);
+        d3Input.requestFocus();
+        d1Section.setEnabled(false);
+        d2Section.setEnabled(false);
+        scoreSection.setVisibility(View.VISIBLE);
 
 
-        //Turn finished
-        //TODO: This is not quite right. Need to get the messages on the screen earlier, I think
-        scoreSection.setVisibility(View.INVISIBLE);
-        waitingMessage.setText(theirNickname + "'s go. Please wait ...");
-        waitingMessage.setVisibility(View.VISIBLE);
+    } //Ends getDart3()
 
-
-    } //Ends threeDarts()
-
-
-
-        public void getDart1(View view) {
-
-            TextView d1ScoreThisDart = (TextView) findViewById(R.id.tvd1ScoreThisDart);
-            TextView d1ScoreThisTurn = (TextView) findViewById(R.id.tvd1ScoreThisTurn);
-            TextView d1ScoreTotal = (TextView)  findViewById(R.id.tvd1ScoreTotal);
+        public void dart1Thrown(View view) {
 
             //Player has entered the score. Prevent them from going back to edit it
             d1Input.setFocusable(false);
@@ -590,7 +609,121 @@ public class PlayDarts extends AppCompatActivity {
             bustThisThrow = false;
             wonLegThisThrow = false;
             scoreThisDart = dart.score;
+
+            // score for the dart might be modified by start and finish conditions
+            checkStartAndFinishConditions();
             scoreThisTurn = scoreThisDart;
+            myTotalScore = myTotalScore - scoreThisDart;
+
+            //Write them to the screen
+            d1ScoreThisDart.setText(Integer.toString(scoreThisDart));
+            d1ScoreThisTurn.setText(Integer.toString(scoreThisTurn));
+            d1ScoreTotal.setText(Integer.toString(myTotalScore));
+
+            if (bustThisThrow || wonLegThisThrow) {
+                finishThrow();
+            }
+            else {
+                getDart2();
+            }
+
+        } //Ends dart1Thrown
+
+    public void dart2Thrown(View view) {
+
+        //Player has entered the score. Prevent them from going back to edit it
+        d2Input.setFocusable(false);
+
+        dart.analyse(d2Input.toString().trim());
+
+        throwString = throwString + dart.string;
+        bustThisThrow = false;
+        wonLegThisThrow = false;
+        scoreThisDart = dart.score;
+
+        // score for the dart might be modified by start and finish conditions
+        checkStartAndFinishConditions();
+        scoreThisTurn = scoreThisTurn + scoreThisDart;
+        myTotalScore = myTotalScore - scoreThisDart;
+
+        //Write them to the screen
+        d2ScoreThisDart.setText(Integer.toString(scoreThisDart));
+        d2ScoreThisTurn.setText(Integer.toString(scoreThisTurn));
+        d2ScoreTotal.setText(Integer.toString(myTotalScore));
+
+        if (bustThisThrow || wonLegThisThrow) {
+            finishThrow();
+        }
+        else {
+            getDart3();
+        }
+
+    } //Ends dart2Thrown
+
+    public void dart3Thrown(View view) {
+
+        //Player has entered the score. Prevent them from going back to edit it
+        d3Input.setFocusable(false);
+
+        dart.analyse(d3Input.toString().trim());
+
+        throwString = throwString + dart.string;
+        bustThisThrow = false;
+        wonLegThisThrow = false;
+        scoreThisDart = dart.score;
+
+        // score for the dart might be modified by start and finish conditions
+        checkStartAndFinishConditions();
+        scoreThisTurn = scoreThisTurn + scoreThisDart;
+        myTotalScore = myTotalScore - scoreThisDart;
+
+        //Write them to the screen
+        d3ScoreThisDart.setText(Integer.toString(scoreThisDart));
+        d3ScoreThisTurn.setText(Integer.toString(scoreThisTurn));
+        d3ScoreTotal.setText(Integer.toString(myTotalScore));
+
+        finishThrow();
+
+    } //Ends dart3Thrown
+
+    private void finishThrow() {
+
+        //Turn finished
+        scoreSection.setVisibility(View.INVISIBLE);
+        waitingMessage.setText(theirNickname + "'s go. Please wait ...");
+        waitingMessage.setVisibility(View.VISIBLE);
+
+        //Work out scores if a winning dart was thrown
+        //We'll work out if the game is over when we read the record back
+        if (wonLegThisThrow) {
+            legScores.set(myScoreIndex, legScores.get(myScoreIndex) + 1);
+            if (legScores.get(myScoreIndex) == legsToWin) {
+                setScores.set(myScoreIndex,setScores.get(myScoreIndex)+1);
+                legScores.set(myScoreIndex,0);
+                legScores.set(theirScoreIndex,0);
+            }
+        }
+
+
+        //write out the score record - which will then force the flip to the other player's turn
+        score.setThrower(myUId);
+        score.setThrowString(throwString);
+        score.setThrowScore(scoreThisTurn);
+        totalScore.set(myScoreIndex,myTotalScore);
+        score.setTotalScore(totalScore);
+        hasStarted.set(myScoreIndex,iHaveStarted);
+        score.setHasStarted(hasStarted);
+        score.setLegScores(legScores);
+        score.setSetScores(setScores);
+        score.setLegFinished(wonLegThisThrow);
+
+        scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
+        scoresDataBaseReference.push().setValue(score);
+
+    }
+
+    private void checkStartAndFinishConditions() {
+
 
             //Starting conditions
             if (!iHaveStarted) { //I haven't started, so I must need a double to start
@@ -623,10 +756,32 @@ public class PlayDarts extends AppCompatActivity {
                 }
             }
 
-        } //Ends getDart1
+        } //Ends checkStartAndFinishConditions
 
+        private void setDartInputFilters(EditText editText, Button button) {
 
+            editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
 
+            editText.addTextChangedListener(new TextWatcher() {
+                public void afterTextChanged(Editable s) {
+
+                    if (s.toString().matches(scorePattern) && s.length() > 0)
+                    {
+                        button.setEnabled(true);
+                    }
+                    else
+                    {
+                        button.setEnabled(false);
+                    }
+                }
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+            });
+
+        } //Ends setDartInputFilters
 
         } //Ends PlayDarts.java
 

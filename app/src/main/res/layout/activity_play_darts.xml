@@ -109,7 +109,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_marginLeft="20dp"
-            android:onClick="getDart1"
+            android:onClick="dart1Thrown"
             android:text="->"
             />
 
@@ -171,6 +171,7 @@
             android:layout_width="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="->"
+            android:onClick="dart2Thrown"
             />
 
         <TextView
@@ -232,6 +233,7 @@
             android:layout_width="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="->"
+            android:onClick="dart3Thrown"
             />
 
         <TextView
