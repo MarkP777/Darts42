@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -28,6 +29,7 @@ import org.w3c.dom.Text;
 
 import java.text.Format;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PlayDarts extends AppCompatActivity {
@@ -117,8 +119,14 @@ public class PlayDarts extends AppCompatActivity {
     private Integer myScoreIndex;
     private Integer theirScoreIndex;
     private Boolean iAmPlayer0;
+    private Boolean matchOver;
+    private Boolean setOver;
 
     private Boolean myGoNext;
+
+    private String messageText;
+
+    private CountDownTimer messageCountDownTimer;
 
     Dart dart = new Dart();
     Score score = new Score();
@@ -409,11 +417,12 @@ public class PlayDarts extends AppCompatActivity {
             //Set up the top section. "I" am always on the left
             lName.setText(myNickname);
             rName.setText(theirNickname);
-            lSets.setText(String.format("%1$d",setScores.get(myScoreIndex)));
-            rSets.setText(String.format("%1$d",setScores.get(theirScoreIndex)));
-            lLegs.setText(String.format("%1$d",legScores.get(myScoreIndex)));
-            rLegs.setText(String.format("%1$d",legScores.get(theirScoreIndex)));
-            
+            lSets.setText("");
+            rSets.setText("");
+            lLegs.setText("");
+            rLegs.setText("");
+
+
             //Clear the bottom section
             scoreSection.setVisibility(View.INVISIBLE);
             gameMessage.setText("");
@@ -462,6 +471,9 @@ public class PlayDarts extends AppCompatActivity {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
+                        //Cancel the message countdowntimer if it's running
+                        if (messageCountDownTimer != null) messageCountDownTimer.cancel();
+
                         //Unwrap the message
                         Score scoreRecord = dataSnapshot.getValue(Score.class);
 
@@ -491,7 +503,12 @@ public class PlayDarts extends AppCompatActivity {
                         legScores = scoreRecord.getLegScores();
                         legFinished = scoreRecord.getLegFinished();
 
-                        //TODO: write out sets and legs
+                        //write out sets and legs
+                        lSets.setText(String.format("%1$d",setScores.get(myScoreIndex)));
+                        rSets.setText(String.format("%1$d",setScores.get(theirScoreIndex)));
+                        lLegs.setText(String.format("%1$d",legScores.get(myScoreIndex)));
+                        rLegs.setText(String.format("%1$d",legScores.get(theirScoreIndex)));
+
 
                         if (scoreRecord.getThrowScore() < 0) { //Seed record because the total score is negative
                             scoreLinesIn4Columns.add("");
@@ -504,8 +521,11 @@ public class PlayDarts extends AppCompatActivity {
                             } else {
                                 myGoNext = true;
                             }
-                        } else { //TODO have to handle leg completed
-
+                        } else { //Not a seed record
+                            if (legFinished) { //Leg has been won
+                                completeThisLeg(scoreRecord.getThrower());
+                            }
+                            else { //Leg still in progress
                             if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
                                 scoreLinesIn4Columns.add(scoreRecord.getThrowString());
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore()));
@@ -523,9 +543,7 @@ public class PlayDarts extends AppCompatActivity {
                                 myGoNext = true; //Me to go
                             }
 
-                        }
-                            //TODO: sort out sets and legs
-
+                        }}
                             //Get all the above on the screen
                             adapter.notifyItemRangeInserted(adapter.getItemCount(), 4);
                             recyclerView.scrollToPosition(adapter.getItemCount() - 1);
@@ -735,12 +753,12 @@ public class PlayDarts extends AppCompatActivity {
 
             //Finishing conditions
             if (endWithDouble) { //Double needed to finish
-                if (scoreThisTurn > totalScore) { //Double needed, but I threw too much
+                if (scoreThisTurn > myTotalScore) { //Double needed, but I threw too much
                     bustThisThrow = true;
                     scoreThisDart = 0;
                     scoreThisTurn = 0;
                 }
-                else if (scoreThisDart == totalScore)  { //Double needed, and I threw exactly what was needed
+                else if (scoreThisDart == myScoreIndex)  { //Double needed, and I threw exactly what was needed
                     if (dart.isDouble) { //it was a double, so I won
                         wonLegThisThrow = true;
                     }
@@ -751,7 +769,7 @@ public class PlayDarts extends AppCompatActivity {
                     }
                 }
             } else { //Double not needed to finish
-                if (scoreThisTurn >= totalScore) { //I get to the finishing point, so I win
+                if (scoreThisTurn >= myTotalScore) { //I get to the finishing point, so I win
                     wonLegThisThrow = true;
                 }
             }
@@ -782,6 +800,71 @@ public class PlayDarts extends AppCompatActivity {
             });
 
         } //Ends setDartInputFilters
+
+    private void completeThisLeg(String winner) {
+
+        //Work out where we are in the game
+        matchOver = false;
+        setOver = false;
+        messageText = "Leg to ";
+        if ((legScores.get(myScoreIndex) == 0) && (legScores.get(theirScoreIndex) == 0)) { //Leg scores are 0 so must have finished the set
+            setOver = true;
+            messageText = "Leg and set to ";
+            if ((setScores.get(myScoreIndex) == setsToWin) || (setScores.get(theirScoreIndex) == setsToWin)) { //Someone has won
+                matchOver = true;
+                messageText = "Leg, set and match to ";
+            }
+        }
+
+        if (winner.equals(myUId)) {
+            messageText = messageText + "you";
+        }
+        else {
+            messageText = messageText + theirNickname;
+        }
+
+        //Tell the player what's happened
+        //TODO: need to consider re-using waitingMessage here
+        //TODO: do we still need the gameMessage section at the bottom?
+        scoreSection.setVisibility(View.INVISIBLE);
+        waitingMessage.setText(messageText);
+        waitingMessage.setVisibility(View.VISIBLE);
+
+        messageCountDownTimer = new CountDownTimer(10000,1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+
+                //The loser clears down the score records and if the match is still in progress writes a new seed record
+                if (winner != myUId) {
+                    scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
+                    scoresDataBaseReference.removeValue();
+                    if (!matchOver) {
+                        score.setThrower(winner); //Winner's id so that the loser starts next leg
+                        score.setThrowString("");
+                        score.setThrowScore(-1);
+                        score.setTotalScore(new ArrayList<Integer>(Arrays.asList(new Integer[]{startingPoints, startingPoints})));
+                        score.setHasStarted(new ArrayList<Boolean>(Arrays.asList(new Boolean[]{!startWithDouble, !startWithDouble})));
+                        score.setLegScores(legScores);
+                        score.setSetScores(setScores);
+                        score.setLegFinished(false);
+                        scoresDataBaseReference.push().setValue(score);
+                    }
+
+                }
+                //If the match is over both players delete their Match in Progress message records
+                //and set their profiles to Not Engaged
+
+            }
+
+        };
+
+
+    } //Ends completeThisLeg()
 
         } //Ends PlayDarts.java
 
