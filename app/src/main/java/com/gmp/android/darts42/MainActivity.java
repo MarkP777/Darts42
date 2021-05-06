@@ -460,14 +460,11 @@ public class MainActivity extends AppCompatActivity {
         private void continueMatch() {
             Log.d(TAG, "Into play darts");
             detachPlayerMessageListener();
-           /*
+
             Intent intent1;
             intent1 = new Intent(MainActivity.this, PlayDarts.class);
-            intent1.putExtra(PlayDarts.EXTRA_MATCHID, (String) matchID );
-            intent1.putExtra(PlayDarts.EXTRA_OPPONENTID, (String) opponentID);
             startActivityForResult(intent1, 2);
 
-            */
         }
 
 

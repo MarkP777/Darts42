@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -450,6 +451,10 @@ public class IssueChallenge extends AppCompatActivity {
 
     private void goToMatch() {
 
+
+        Intent intent1;
+        intent1 = new Intent(IssueChallenge.this, PlayDarts.class);
+         startActivityForResult(intent1, 2);
     }
 
 
@@ -493,6 +498,14 @@ public class IssueChallenge extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //We should only get here from the PlayDarts activity.
+        //At the moment, we just:
+        finish();
+    }
 
 
 

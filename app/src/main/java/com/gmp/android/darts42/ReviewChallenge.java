@@ -3,6 +3,7 @@ package com.gmp.android.darts42;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -251,7 +252,11 @@ public class ReviewChallenge extends AppCompatActivity {
         playerProfileReference = mDatabase.getReference("player_profiles");
         playerProfileReference.child(mUid).child("playerEngaged").setValue(true);
 
-        //TODO: goto the game activity
+        //Start game activity
+
+        Intent intent1;
+        intent1 = new Intent(ReviewChallenge.this, PlayDarts.class);
+        startActivityForResult(intent1, 2);
 
     }
 
@@ -333,8 +338,17 @@ public class ReviewChallenge extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-
+        //We should only get here from the PlayDarts activity.
+        //At the moment, we just:
+        finish();
     }
+
+
+
+}
 
 

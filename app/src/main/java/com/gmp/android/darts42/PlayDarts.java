@@ -528,8 +528,8 @@ public class PlayDarts extends AppCompatActivity {
                             else { //Leg still in progress
                             if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
                                 scoreLinesIn4Columns.add(scoreRecord.getThrowString());
-                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore()));
-                                scoreLinesIn4Columns.add(scoreLinesIn4Columns.get(scoreLinesIn4Columns.size() - 4));
+                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
+                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
                                 scoreLinesIn4Columns.add("");
                                 myGoNext = false; //Other player to go next
                                 // In this case it's the other player to go next
@@ -537,8 +537,8 @@ public class PlayDarts extends AppCompatActivity {
 
                             } else { // "their" score
                                 scoreLinesIn4Columns.add("");
-                                scoreLinesIn4Columns.add(scoreLinesIn4Columns.get(scoreLinesIn4Columns.size() - 4));
-                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore()));
+                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
+                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
                                 scoreLinesIn4Columns.add(scoreRecord.getThrowString());
                                 myGoNext = true; //Me to go
                             }
@@ -549,8 +549,14 @@ public class PlayDarts extends AppCompatActivity {
                             recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
                             //Get next input
-                            if (myGoNext) {
+                            if (myGoNext) { //My go, so get input
                                 getDart1();
+                            }
+                            else { //Their go, so I'm told to wait
+                                messageText = "Waiting for " + theirNickname + " to throw";
+                                waitingMessage.setText(messageText);
+                                scoreSection.setVisibility(View.INVISIBLE);
+                                waitingMessage.setVisibility(View.VISIBLE);
                             }
 
 
@@ -584,12 +590,13 @@ public class PlayDarts extends AppCompatActivity {
 
     private void getDart1() {
 
+        waitingMessage.setVisibility(View.INVISIBLE);
+        scoreSection.setVisibility(View.VISIBLE);
         d1Section.setEnabled(true);
         d1Send.setEnabled(false);
         d1Input.requestFocus();
         d2Section.setEnabled(false);
         d3Section.setEnabled(false);
-        scoreSection.setVisibility(View.VISIBLE);
 
     } //Ends getDart1()
 
@@ -600,7 +607,6 @@ public class PlayDarts extends AppCompatActivity {
         d2Input.requestFocus();
         d1Section.setEnabled(false);
         d3Section.setEnabled(false);
-        scoreSection.setVisibility(View.VISIBLE);
 
     } //Ends getDart2()
 
@@ -611,7 +617,6 @@ public class PlayDarts extends AppCompatActivity {
         d3Input.requestFocus();
         d1Section.setEnabled(false);
         d2Section.setEnabled(false);
-        scoreSection.setVisibility(View.VISIBLE);
 
 
     } //Ends getDart3()
@@ -738,6 +743,15 @@ public class PlayDarts extends AppCompatActivity {
         scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
         scoresDataBaseReference.push().setValue(score);
 
+        //Write out the match record if the leg was won
+        //TODO: Consider using updateChildren here and elsewhere when doing multiple connected updates
+        if (wonLegThisThrow) {
+            scoresDataBaseReference = fbDatabase.getReference("matches").child(matchID).child("setScores");
+            scoresDataBaseReference.setValue(setScores);
+            scoresDataBaseReference = fbDatabase.getReference("matches").child(matchID).child("legScores");
+            scoresDataBaseReference.setValue(legScores);
+        }
+
     }
 
     private void checkStartAndFinishConditions() {
@@ -856,8 +870,19 @@ public class PlayDarts extends AppCompatActivity {
                     }
 
                 }
-                //If the match is over both players delete their Match in Progress message records
+                /*
+                If the match is over both players delete their Match in Progress message records
                 //and set their profiles to Not Engaged
+                 */
+                //Profile:
+                scoresDataBaseReference = fbDatabase.getReference("player_profiles");
+                scoresDataBaseReference.child(myUId).child("playerEngaged").setValue(false);
+                //Messages (clear all)
+                scoresDataBaseReference = fbDatabase.getReference().child("player_messages").child(myUId);
+                scoresDataBaseReference.removeValue();
+
+                //And get out of here
+                finish();
 
             }
 
