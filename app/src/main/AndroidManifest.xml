@@ -11,6 +11,7 @@
         android:theme="@style/Theme.Darts42">
         <activity android:name=".ReviewChallenge"></activity>
         <activity android:name=".IssueChallenge" ></activity>
+        <activity android:name=".PlayDarts"></activity>
         <activity
             android:name=".InitialiseGame"
             android:label="@string/title_activity_initialise_game"

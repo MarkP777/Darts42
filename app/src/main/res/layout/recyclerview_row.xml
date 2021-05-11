@@ -13,6 +13,6 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:id="@+id/col1TextView"
-        android:textAppearance="@android:style/TextAppearance.Medium" />
+        />
 
 </LinearLayout>

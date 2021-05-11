@@ -108,7 +108,7 @@
         android:id="@+id/tvMaxLegsPrompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Best of Legs per Set"
+        android:text="Legs per Set"
         app:layout_constraintLeft_toRightOf="@id/spMaxSets"
         app:layout_constraintBottom_toBottomOf="@id/spMaxSets"
         android:layout_marginLeft="20dp"

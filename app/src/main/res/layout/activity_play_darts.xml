@@ -6,15 +6,21 @@
     android:layout_height="match_parent"
     tools:context=".PlayDarts">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.5"
+        android:orientation="vertical"
+        />
     <TextView
         android:id="@+id/tvlSets"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/guideline1"
         android:layout_marginTop="30dp"
-        android:layout_marginLeft="50dp"
+        android:layout_marginRight="20dp"
         android:text="0"
         android:gravity="right"
         />
@@ -22,10 +28,9 @@
         android:id="@+id/tvrSets"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@id/tvlSets"
+        app:layout_constraintLeft_toRightOf="@+id/guideline1"
         app:layout_constraintBottom_toBottomOf="@id/tvlSets"
-        android:layout_marginTop="30dp"
-        android:layout_marginLeft="50dp"
+        android:layout_marginLeft="20dp"
         android:text="0"
         android:gravity="left"
         />
@@ -54,7 +59,7 @@
         android:id="@+id/tvlName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="@id/tvlLegs"
+        app:layout_constraintRight_toRightOf="@id/tvlSets"
         app:layout_constraintTop_toBottomOf="@id/tvlLegs"
         android:layout_marginTop="30dp"
         android:text="Name"
@@ -65,7 +70,7 @@
         android:id="@+id/tvrName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="@id/tvrLegs"
+        app:layout_constraintLeft_toLeftOf="@id/tvrSets"
         app:layout_constraintBottom_toBottomOf="@id/tvlName"
         android:text="Name"
         android:gravity="left"
@@ -76,6 +81,7 @@
         android:background="@android:color/darker_gray"
         app:layout_constraintTop_toBottomOf="@+id/tvlName"
         app:layout_constraintBottom_toTopOf="@+id/tvd1Prompt"
+        android:layout_marginBottom="30dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_height="wrap_content"
@@ -87,6 +93,7 @@
         android:id="@+id/tvd1Prompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
         app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintBottom_toTopOf="@id/tvd2Prompt"
         android:text="Dart 1"
@@ -149,6 +156,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintBottom_toTopOf="@id/tvd3Prompt"
+            android:layout_marginBottom="20dp"
             android:text="Dart 2"
             />
 
@@ -205,13 +213,13 @@
             />
 
 
-        <TextView
-            android:id="@+id/tvd3Prompt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Dart 3"
-            app:layout_constraintBottom_toTopOf="@id/tvGameMessage"
-            app:layout_constraintLeft_toLeftOf="parent" />
+    <TextView
+        android:id="@+id/tvd3Prompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dart 3"
+        app:layout_constraintBottom_toTopOf="@id/tvGameMessage"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
 
         <EditText
@@ -221,7 +229,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_marginLeft="20dp"
-            android:inputType="textFilter"
+             android:inputType="textFilter"
             />
 
 

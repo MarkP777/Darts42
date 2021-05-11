@@ -13,6 +13,7 @@ import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -103,7 +104,7 @@ public class PlayDarts extends AppCompatActivity {
 
 
     PlayerMessage type102Message;
-    Match matchDetails;
+    Match matchDetails = new Match();
     PlayerProfile theirProfile;
 
     private String matchID;
@@ -199,7 +200,7 @@ public class PlayDarts extends AppCompatActivity {
 
         //Read the message. We'll assume that there is only one with type 102
 
-        fbMessageDatabaseReference = fbDatabase.getReference().child("player_messages");
+        fbMessageDatabaseReference = fbDatabase.getReference("player_messages").child(myUId);
         Query data = fbMessageDatabaseReference.orderByChild("messageType").equalTo(102).limitToFirst(1);
         data.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -218,6 +219,7 @@ public class PlayDarts extends AppCompatActivity {
                     }
                 } else {
                     // Couldn't find the match message - do nothing
+                    Log.d(TAG, "102 message not found");
                 }
             }
 
@@ -248,14 +250,14 @@ public class PlayDarts extends AppCompatActivity {
                         Log.d(TAG, "Match data found");
 
                         //TODO: unwrap the match record
-                        if (matchDetails.getPlayer0Id().equals(myUId)) {
-                            iAmPlayer0 = true;
-                            myScoreIndex = 0;
-                            theirScoreIndex = 1;
-                        } else {
+                        if (matchDetails.getPlayer1Id().equals(myUId)) {
                             iAmPlayer0 = false;
                             myScoreIndex = 1;
                             theirScoreIndex = 0;
+                        } else {
+                            iAmPlayer0 = true;
+                            myScoreIndex = 0;
+                            theirScoreIndex = 1;
                         }
                         setsToWin = (int) Math.floor(matchDetails.getBestOfSets() / 2) + 1;
                         legsToWin = (int) Math.floor(matchDetails.getBestOfLegs() / 2) + 1;
@@ -446,7 +448,7 @@ public class PlayDarts extends AppCompatActivity {
             gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
                 @Override
                 public int getSpanSize(int position) {
-                    if ((position == 1) || (position == 2))
+                    if (((position % 4) == 1) || ((position % 4) == 2))
                         return 1;
                     else
                         return 3;
@@ -481,11 +483,11 @@ public class PlayDarts extends AppCompatActivity {
                                 + scoreRecord.getThrower()
                                 + " with string "
                                 + scoreRecord.getThrowString()
-                                + " and scores "
-                                + String.format("%1$d and %2$d", scoreRecord.getThrowScore(), scoreRecord.getTotalScore()));
+                                + " and throw score "
+                                + String.format("%1$d", scoreRecord.getThrowScore()));
 
-                        //Delete the message once it's been read
-                        scoresDataBaseReference.child(dataSnapshot.getKey()).removeValue();
+                        //Not sure why I thought I needed to delete the message here
+                        //scoresDataBaseReference.child(dataSnapshot.getKey()).removeValue();
                     /*
 
                     /*
@@ -511,6 +513,10 @@ public class PlayDarts extends AppCompatActivity {
 
 
                         if (scoreRecord.getThrowScore() < 0) { //Seed record because the total score is negative
+                            //Clear the list
+                            scoreLinesIn4Columns.clear();
+
+                            //Start adding new entries
                             scoreLinesIn4Columns.add("");
                             scoreLinesIn4Columns.add(Integer.toString(startingPoints));
                             scoreLinesIn4Columns.add(Integer.toString(startingPoints));
@@ -527,7 +533,7 @@ public class PlayDarts extends AppCompatActivity {
                             }
                             else { //Leg still in progress
                             if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
-                                scoreLinesIn4Columns.add(scoreRecord.getThrowString());
+                                scoreLinesIn4Columns.add(scoreRecord.getThrowString()+String.format(" [%1d]",scoreRecord.getThrowScore()));
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
                                 scoreLinesIn4Columns.add("");
@@ -539,12 +545,12 @@ public class PlayDarts extends AppCompatActivity {
                                 scoreLinesIn4Columns.add("");
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
-                                scoreLinesIn4Columns.add(scoreRecord.getThrowString());
+                                scoreLinesIn4Columns.add(String.format("[%1d] ",scoreRecord.getThrowScore())+scoreRecord.getThrowString());
                                 myGoNext = true; //Me to go
                             }
 
                         }}
-                            //Get all the above on the screen
+                            //Get all the above on the screen;
                             adapter.notifyItemRangeInserted(adapter.getItemCount(), 4);
                             recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
@@ -592,31 +598,52 @@ public class PlayDarts extends AppCompatActivity {
 
         waitingMessage.setVisibility(View.INVISIBLE);
         scoreSection.setVisibility(View.VISIBLE);
-        d1Section.setEnabled(true);
+        d1Input.getText().clear();
+        d1ScoreThisDart.setText("");
+        d1ScoreThisTurn.setText("");
+        d1ScoreTotal.setText("");
+
+        //setDartInputFilters(d1Input,d1Send);
+        d1Section.setVisibility(View.VISIBLE);
         d1Send.setEnabled(false);
+        d1Input.setFocusableInTouchMode(true);
+        d1Input.setFocusable(true);
         d1Input.requestFocus();
-        d2Section.setEnabled(false);
-        d3Section.setEnabled(false);
+        d2Section.setVisibility(View.INVISIBLE);
+        d3Section.setVisibility(View.INVISIBLE);
 
     } //Ends getDart1()
 
     private void getDart2() {
 
-        d2Section.setEnabled(true);
+        d2Input.setText("");
+        d2ScoreThisDart.setText("");
+        d2ScoreThisTurn.setText("");
+        d2ScoreTotal.setText("");
+
+        //setDartInputFilters(d2Input,d2Send);
+        d2Section.setVisibility(View.VISIBLE);
         d2Send.setEnabled(false);
+        d2Input.setFocusableInTouchMode(true);
+        d2Input.setFocusable(true);
         d2Input.requestFocus();
-        d1Section.setEnabled(false);
-        d3Section.setEnabled(false);
+        d3Section.setVisibility(View.INVISIBLE);
 
     } //Ends getDart2()
 
     private void getDart3() {
 
-        d3Section.setEnabled(true);
+        d3Input.setText("");
+        d3ScoreThisDart.setText("");
+        d3ScoreThisTurn.setText("");
+        d3ScoreTotal.setText("");
+
+        //setDartInputFilters(d3Input,d3Send);
+        d3Section.setVisibility(View.VISIBLE);
         d3Send.setEnabled(false);
+        d3Input.setFocusableInTouchMode(true);
+        d3Input.setFocusable(true);
         d3Input.requestFocus();
-        d1Section.setEnabled(false);
-        d2Section.setEnabled(false);
 
 
     } //Ends getDart3()
@@ -625,8 +652,10 @@ public class PlayDarts extends AppCompatActivity {
 
             //Player has entered the score. Prevent them from going back to edit it
             d1Input.setFocusable(false);
+            d1Send.setEnabled(false);
+            d1Send.setVisibility(View.INVISIBLE);
 
-            dart.analyse(d1Input.toString().trim());
+            dart.analyse(d1Input.getText().toString().trim());
 
             throwString = dart.string;
             bustThisThrow = false;
@@ -634,8 +663,8 @@ public class PlayDarts extends AppCompatActivity {
             scoreThisDart = dart.score;
 
             // score for the dart might be modified by start and finish conditions
-            checkStartAndFinishConditions();
             scoreThisTurn = scoreThisDart;
+            checkStartAndFinishConditions();
             myTotalScore = myTotalScore - scoreThisDart;
 
             //Write them to the screen
@@ -644,6 +673,7 @@ public class PlayDarts extends AppCompatActivity {
             d1ScoreTotal.setText(Integer.toString(myTotalScore));
 
             if (bustThisThrow || wonLegThisThrow) {
+                hideKeyboard();
                 finishThrow();
             }
             else {
@@ -656,17 +686,20 @@ public class PlayDarts extends AppCompatActivity {
 
         //Player has entered the score. Prevent them from going back to edit it
         d2Input.setFocusable(false);
+        d2Send.setEnabled(false);
+        d2Send.setVisibility(View.INVISIBLE);
 
-        dart.analyse(d2Input.toString().trim());
 
-        throwString = throwString + dart.string;
+        dart.analyse(d2Input.getText().toString().trim());
+
+        throwString = throwString + ":" + dart.string;
         bustThisThrow = false;
         wonLegThisThrow = false;
         scoreThisDart = dart.score;
 
         // score for the dart might be modified by start and finish conditions
-        checkStartAndFinishConditions();
         scoreThisTurn = scoreThisTurn + scoreThisDart;
+        checkStartAndFinishConditions();
         myTotalScore = myTotalScore - scoreThisDart;
 
         //Write them to the screen
@@ -675,6 +708,7 @@ public class PlayDarts extends AppCompatActivity {
         d2ScoreTotal.setText(Integer.toString(myTotalScore));
 
         if (bustThisThrow || wonLegThisThrow) {
+            hideKeyboard();
             finishThrow();
         }
         else {
@@ -687,17 +721,18 @@ public class PlayDarts extends AppCompatActivity {
 
         //Player has entered the score. Prevent them from going back to edit it
         d3Input.setFocusable(false);
+        d3Send.setEnabled(false);
 
-        dart.analyse(d3Input.toString().trim());
+        dart.analyse(d3Input.getText().toString().trim());
 
-        throwString = throwString + dart.string;
+        throwString = throwString + ":" + dart.string;
         bustThisThrow = false;
         wonLegThisThrow = false;
         scoreThisDart = dart.score;
 
         // score for the dart might be modified by start and finish conditions
-        checkStartAndFinishConditions();
         scoreThisTurn = scoreThisTurn + scoreThisDart;
+        checkStartAndFinishConditions();
         myTotalScore = myTotalScore - scoreThisDart;
 
         //Write them to the screen
@@ -705,6 +740,7 @@ public class PlayDarts extends AppCompatActivity {
         d3ScoreThisTurn.setText(Integer.toString(scoreThisTurn));
         d3ScoreTotal.setText(Integer.toString(myTotalScore));
 
+        hideKeyboard();
         finishThrow();
 
     } //Ends dart3Thrown
@@ -761,16 +797,18 @@ public class PlayDarts extends AppCompatActivity {
             if (!iHaveStarted) { //I haven't started, so I must need a double to start
                 if (dart.isDouble) {
                     iHaveStarted = true;}
-                else {
-                    scoreThisDart = 0;} //Not a double so scores 0
+                else { //Not a double so scores 0
+                    scoreThisDart = 0;
+                    scoreThisTurn = 0;
+                }
             }
 
             //Finishing conditions
             if (endWithDouble) { //Double needed to finish
                 if (scoreThisTurn > myTotalScore) { //Double needed, but I threw too much
                     bustThisThrow = true;
+                    scoreThisTurn = scoreThisTurn = scoreThisDart;
                     scoreThisDart = 0;
-                    scoreThisTurn = 0;
                 }
                 else if (scoreThisDart == myScoreIndex)  { //Double needed, and I threw exactly what was needed
                     if (dart.isDouble) { //it was a double, so I won
@@ -778,8 +816,8 @@ public class PlayDarts extends AppCompatActivity {
                     }
                     else { //it wasn't a double, so I'm bust
                         bustThisThrow = true;
+                        scoreThisTurn = scoreThisTurn = scoreThisDart;
                         scoreThisDart = 0;
-                        scoreThisTurn = 0;
                     }
                 }
             } else { //Double not needed to finish
@@ -890,6 +928,12 @@ public class PlayDarts extends AppCompatActivity {
 
 
     } //Ends completeThisLeg()
+
+    private void hideKeyboard() {
+
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+    } //Ends hideKeyboard
 
         } //Ends PlayDarts.java
 
