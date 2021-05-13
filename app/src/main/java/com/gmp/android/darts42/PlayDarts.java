@@ -528,11 +528,7 @@ public class PlayDarts extends AppCompatActivity {
                                 myGoNext = true;
                             }
                         } else { //Not a seed record
-                            if (legFinished) { //Leg has been won
-                                completeThisLeg(scoreRecord.getThrower());
-                            }
-                            else { //Leg still in progress
-                            if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
+                             if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
                                 scoreLinesIn4Columns.add(scoreRecord.getThrowString()+String.format(" [%1d]",scoreRecord.getThrowScore()));
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
                                 scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
@@ -549,21 +545,26 @@ public class PlayDarts extends AppCompatActivity {
                                 myGoNext = true; //Me to go
                             }
 
-                        }}
+                        }
                             //Get all the above on the screen;
                             adapter.notifyItemRangeInserted(adapter.getItemCount(), 4);
                             recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
+                        if (legFinished) { //Leg has been won
+                            completeThisLeg(scoreRecord.getThrower());
+                        }
+                        else { //Leg still in progress
+
                             //Get next input
                             if (myGoNext) { //My go, so get input
                                 getDart1();
-                            }
-                            else { //Their go, so I'm told to wait
+                            } else { //Their go, so I'm told to wait
                                 messageText = "Waiting for " + theirNickname + " to throw";
                                 waitingMessage.setText(messageText);
                                 scoreSection.setVisibility(View.INVISIBLE);
                                 waitingMessage.setVisibility(View.VISIBLE);
                             }
+                        }
 
 
                     }
@@ -805,7 +806,7 @@ public class PlayDarts extends AppCompatActivity {
 
             //Finishing conditions
             if (endWithDouble) { //Double needed to finish
-                if (scoreThisTurn > myTotalScore) { //Double needed, but I threw too much
+                if (scoreThisDart > myTotalScore) { //Double needed, but I threw too much
                     bustThisThrow = true;
                     scoreThisTurn = scoreThisTurn = scoreThisDart;
                     scoreThisDart = 0;
@@ -821,7 +822,7 @@ public class PlayDarts extends AppCompatActivity {
                     }
                 }
             } else { //Double not needed to finish
-                if (scoreThisTurn >= myTotalScore) { //I get to the finishing point, so I win
+                if (scoreThisDart >= myTotalScore) { //I get to the finishing point, so I win
                     wonLegThisThrow = true;
                 }
             }
@@ -912,20 +913,22 @@ public class PlayDarts extends AppCompatActivity {
                 If the match is over both players delete their Match in Progress message records
                 //and set their profiles to Not Engaged
                  */
-                //Profile:
-                scoresDataBaseReference = fbDatabase.getReference("player_profiles");
-                scoresDataBaseReference.child(myUId).child("playerEngaged").setValue(false);
-                //Messages (clear all)
-                scoresDataBaseReference = fbDatabase.getReference().child("player_messages").child(myUId);
-                scoresDataBaseReference.removeValue();
+                if (matchOver) {
+                    //Profile:
+                    scoresDataBaseReference = fbDatabase.getReference("player_profiles");
+                    scoresDataBaseReference.child(myUId).child("playerEngaged").setValue(false);
+                    //Messages (clear all)
+                    scoresDataBaseReference = fbDatabase.getReference().child("player_messages").child(myUId);
+                    scoresDataBaseReference.removeValue();
 
-                //And get out of here
-                finish();
+                    //And get out of here
+                    finish();
+                }
 
             }
 
         };
-
+        messageCountDownTimer.start();
 
     } //Ends completeThisLeg()
 
