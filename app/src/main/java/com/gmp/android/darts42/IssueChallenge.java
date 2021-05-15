@@ -63,7 +63,7 @@ public class IssueChallenge extends AppCompatActivity {
 
     private String[] setsValues = new String[7];
     private String[] legsValues = new String [6];
-    private String[] startValues = new String[3];
+    private String[] startValues = new String[5];
 
     private SwitchCompat doubleToStartSwitch;
     private SwitchCompat doubleToFinishSwitch;
@@ -134,7 +134,7 @@ public class IssueChallenge extends AppCompatActivity {
         //Set up values for the spinners
         int counter;
         int intValue = 501;
-        for (counter = 0; counter < 3; counter++) {
+        for (counter = 0; counter < 5; counter++) {
             startValues[counter] = String.format("%1$3d", intValue);
             intValue = intValue - 100;
         }
@@ -175,7 +175,7 @@ public class IssueChallenge extends AppCompatActivity {
         legsSpinner.setAdapter(legsAdapter);
 
         // Set the default values for the spinners
-        startSpinner.setSelection(0); //Start at 501
+        startSpinner.setSelection(4); //Start at 101
         setsSpinner.setSelection(0); //1 set per match
         legsSpinner.setSelection(1); //3 legs per set
 

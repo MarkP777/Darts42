@@ -38,7 +38,7 @@ public class PlayDarts extends AppCompatActivity {
 
     private static final String TAG = "PlayDarts";
 
-    private static final String scorePattern = "^([bim]{1})|^(^[dt]?[12]{1}[0]{1})|^(^[dt]?[1]?[1-9]{1})";
+    private static final String scorePattern = "^([bom]{1})|^(^[dt]?[12]{1}[0]{1})|^(^[dt]?[1]?[1-9]{1})";
 
     CommonData commonData;
     String myUId;
@@ -56,6 +56,12 @@ public class PlayDarts extends AppCompatActivity {
     Boolean bustThisThrow;
     Boolean wonLegThisThrow;
     Boolean legFinished;
+
+    Boolean scoresNewLineAdded;
+    Boolean scoresLeftColumnFilled;
+    Integer scoreLastPosition;
+
+    Integer tempAdapterLength;
 
 
 
@@ -342,13 +348,13 @@ public class PlayDarts extends AppCompatActivity {
                     this.isDouble = true;
                     this.score = 50;
                     break;
-                case 'i': //i inner
+                case 'o': //o outer
                     this.score = 25;
                     break;
                 case 'm': //m miss
                     this.score = 0;
                     break;
-                default: //not b,i,m
+                default: //not b,o,m
                     switch (tempChar) {
                         case 't': //t treble
                             this.score = Integer.valueOf(string.substring(1)) * 3;
@@ -365,52 +371,8 @@ public class PlayDarts extends AppCompatActivity {
 
         }
     }//ends Dart
-    
-    private void getThrowScores () {
-/*
-
-        // Enable Send button when there's text to send
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.toString().trim().length() > 0) {
-                    mSendButton.setEnabled(true);
-                } else {
-                    mSendButton.setEnabled(false);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-        });
-
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
-
-        // Send button sends a message and clears the EditText
-        mSendButton.setOnClickListener(view -> {
-            // Send messages on click
-
-            thisScore = Integer.parseInt(mMessageEditText.getText().toString());
-            totalScore = totalScore + thisScore;
-            Score score = new Score(thisScore, totalScore, mUsername);
-            mScoresDatabaseReference.push().setValue(score);
 
 
-            // Clear input box
-            mMessageEditText.setText("");
-
-        });
-*/   
-        
-        
-        
-    }//Ends getThrowScores
-    
 
         private void playGame () {
 
@@ -513,14 +475,18 @@ public class PlayDarts extends AppCompatActivity {
 
 
                         if (scoreRecord.getThrowScore() < 0) { //Seed record because the total score is negative
-                            //Clear the list
-                            scoreLinesIn4Columns.clear();
+                            //if we have already displayed scores then clear everything down
+                            if (scoreLinesIn4Columns.size() > 0) {
+                                tempAdapterLength = adapter.getItemCount();
+                                scoreLinesIn4Columns.clear();
+                                adapter.notifyItemRangeRemoved(0,tempAdapterLength);
+                            }
 
                             //Start adding new entries
-                            scoreLinesIn4Columns.add("");
-                            scoreLinesIn4Columns.add(Integer.toString(startingPoints));
-                            scoreLinesIn4Columns.add(Integer.toString(startingPoints));
-                            scoreLinesIn4Columns.add("");
+                            addNewScoreLine();
+                            scoresNewLineAdded = true;
+                            scoreLinesIn4Columns.set(1,Integer.toString(startingPoints));
+                            scoreLinesIn4Columns.set(2,Integer.toString(startingPoints));
                             //Sort out who to go next
                             if (scoreRecord.getThrower().equals(myUId)) {
                                 myGoNext = false;
@@ -529,25 +495,50 @@ public class PlayDarts extends AppCompatActivity {
                             }
                         } else { //Not a seed record
                              if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
-                                scoreLinesIn4Columns.add(scoreRecord.getThrowString()+String.format(" [%1d]",scoreRecord.getThrowScore()));
-                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
-                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
-                                scoreLinesIn4Columns.add("");
+                                 if (scoreLinesIn4Columns.get(scoreLastPosition-2).length() > 0) {
+                                     addNewScoreLine();
+                                     scoresNewLineAdded = true;
+                                 }
+                                 else {
+                                     scoresNewLineAdded = false;
+                                     scoresLeftColumnFilled = true;
+                                 }
+
+                                 scoreLinesIn4Columns.set(scoreLastPosition -3, scoreRecord.getThrowString()+String.format(" [%1d]",scoreRecord.getThrowScore()));
+                                 scoreLinesIn4Columns.set(scoreLastPosition -2, Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
+
                                 myGoNext = false; //Other player to go next
                                 // In this case it's the other player to go next
 
 
                             } else { // "their" score
-                                scoreLinesIn4Columns.add("");
-                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
-                                scoreLinesIn4Columns.add(Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
-                                scoreLinesIn4Columns.add(String.format("[%1d] ",scoreRecord.getThrowScore())+scoreRecord.getThrowString());
+
+                                 if (scoreLinesIn4Columns.get(scoreLastPosition-1).length() > 0) {
+                                     addNewScoreLine();
+                                     scoresNewLineAdded = true;
+                                 }
+                                 else {
+                                     scoresNewLineAdded = false;
+                                     scoresLeftColumnFilled = false;
+                                 }
+
+                                scoreLinesIn4Columns.set(scoreLastPosition-1, Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
+                                scoreLinesIn4Columns.set(scoreLastPosition,String.format("[%1d] ",scoreRecord.getThrowScore())+scoreRecord.getThrowString());
                                 myGoNext = true; //Me to go
                             }
 
                         }
                             //Get all the above on the screen;
+                        if (scoresNewLineAdded) {
                             adapter.notifyItemRangeInserted(adapter.getItemCount(), 4);
+                        } else {
+                            if (scoresLeftColumnFilled) {
+                                adapter.notifyItemRangeChanged(scoreLastPosition-3,2);
+                            } else {
+                                adapter.notifyItemRangeChanged(scoreLastPosition-1,2);
+                            }
+                            }
+
                             recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
                         if (legFinished) { //Leg has been won
@@ -586,6 +577,12 @@ public class PlayDarts extends AppCompatActivity {
 
                         }
                         } //Ends attachScoresListener()
+
+    private void addNewScoreLine() {
+
+        for (int i = 1; i < 5; i++) {scoreLinesIn4Columns.add("");}
+        scoreLastPosition = scoreLinesIn4Columns.size()-1;
+    }
 
     private void detachScoresListener() {
         if (scoresChildEventListener != null) {
@@ -806,23 +803,17 @@ public class PlayDarts extends AppCompatActivity {
 
             //Finishing conditions
             if (endWithDouble) { //Double needed to finish
-                if (scoreThisDart > myTotalScore) { //Double needed, but I threw too much
-                    bustThisThrow = true;
-                    scoreThisTurn = scoreThisTurn = scoreThisDart;
-                    scoreThisDart = 0;
-                }
-                else if (scoreThisDart == myScoreIndex)  { //Double needed, and I threw exactly what was needed
-                    if (dart.isDouble) { //it was a double, so I won
-                        wonLegThisThrow = true;
-                    }
-                    else { //it wasn't a double, so I'm bust
+                if (dart.isDouble && (scoreThisDart == myTotalScore)) { //Throw a double to get exactly to 0
+                    wonLegThisThrow = true;
+                } else { //Didn't get to 0
+                    if (scoreThisDart >= (myTotalScore - 1)) { //Throw anything that takes me to 1 or less
                         bustThisThrow = true;
-                        scoreThisTurn = scoreThisTurn = scoreThisDart;
+                        scoreThisTurn = scoreThisTurn - scoreThisDart;
                         scoreThisDart = 0;
                     }
                 }
             } else { //Double not needed to finish
-                if (scoreThisDart >= myTotalScore) { //I get to the finishing point, so I win
+                    if (scoreThisDart >= myTotalScore) { //I get to the finishing point, so I win
                     wonLegThisThrow = true;
                 }
             }

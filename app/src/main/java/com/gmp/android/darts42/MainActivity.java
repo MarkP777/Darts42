@@ -440,7 +440,7 @@ public class MainActivity extends AppCompatActivity {
             detachPlayerMessageListener();
             Intent intent1;
             intent1 = new Intent(MainActivity.this, IssueChallenge.class);
-            startActivityForResult(intent1, 0);
+            startActivityForResult(intent1, 10);
         }
 
         private void reviewChallenge() {
@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
             intent1.putExtra(ReviewChallenge.EXTRA_MATCHID, (String) matchID );
             intent1.putExtra(ReviewChallenge.EXTRA_OPPONENTID, (String) opponentID);
             intent1.putExtra(ReviewChallenge.EXTRA_TIMESTAMP,(long)timeStampLong);
-            startActivityForResult(intent1, 1);
+            startActivityForResult(intent1, 11);
     }
 
 
@@ -462,134 +462,11 @@ public class MainActivity extends AppCompatActivity {
 
             Intent intent1;
             intent1 = new Intent(MainActivity.this, PlayDarts.class);
-            startActivityForResult(intent1, 2);
+            startActivityForResult(intent1, 12);
 
         }
 
 
-
-
-/*
-
-    private void attachDatabaseReadListener() {
-        if (mChildEventListener == null) {
-            mChildEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-                    //Unwrap the message
-                    PlayerMessage playerMessage = dataSnapshot.getValue(PlayerMessage.class);
-
-                    Log.d(TAG, "Player message received from "
-                            + playerMessage.getSender()
-                            + " of type "
-                            + playerMessage.getMessageType()
-                            + " with payload "
-                            + playerMessage.getPayload());
-
-                    //Delete the message once it's been read
-                    mScoresDatabaseReference.child(dataSnapshot.getKey()).removeValue();
-                    /*
-
-                    Score scoreRow = dataSnapshot.getValue(Score.class);
-
-                    */
-                    /*
-                    Three cases
-                    1) it's a seed record
-                    2) it's a home score
-                    3) it's an away score
-                     */
-                    /*
-                    if (scoreRow.getFieldTotalScore()<0) {
-                        scoreLinesIn4Columns.add("");
-                        scoreLinesIn4Columns.add(Integer.toString(0));
-                        scoreLinesIn4Columns.add(Integer.toString(0));
-                        scoreLinesIn4Columns.add("");
-                        //This needs some sorting out. It's not robust
-
-                    }
-
-                    else {
-
-                    if (scoreRow.getFieldName().equals(mUsername)) {
-                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldScore()));
-                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldTotalScore()));
-                        scoreLinesIn4Columns.add(scoreLinesIn4Columns.get(scoreLinesIn4Columns.size()-4));
-                        scoreLinesIn4Columns.add("");
-                    // In this case it's the other player to go next
-                        bottomSectionPrompt.setVisibility(View.GONE);
-                        bottomSectionWaiting.setVisibility(View.VISIBLE);
-                    // Remind home player of his total score
-                        totalScore = scoreRow.getFieldTotalScore();
-
-                    }
-                    else {
-                        scoreLinesIn4Columns.add("");
-                        scoreLinesIn4Columns.add(scoreLinesIn4Columns.get(scoreLinesIn4Columns.size()-4));
-                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldTotalScore()));
-                        scoreLinesIn4Columns.add(Integer.toString(scoreRow.getFieldScore()));
-                    // In this case it's the home player to go next
-                        bottomSectionWaiting.setVisibility(View.GONE);
-                        bottomSectionPrompt.setVisibility(View.VISIBLE);
-                    }}
-
-                    adapter.notifyItemRangeInserted(adapter.getItemCount(),4);
-                    textTotalScore.setText(String.format("%1$d", totalScore));
-                    recyclerView.scrollToPosition(adapter.getItemCount()-1);
-
-                    */
-
-        /*
-
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            };
-            mScoresDatabaseReference.addChildEventListener(mChildEventListener);
-
-        }
-
-    private void detachDatabaseReadListener() {
-        if (mChildEventListener != null) {
-            mScoresDatabaseReference.removeEventListener(mChildEventListener);
-            mChildEventListener = null;
-        }
-    }
-*/
-/*
-    //Temporary dialog to start game
-
-    public void showNoticeDialog() {
-
-        // Create an instance of the dialog fragment and show it
-
-        DialogFragment dialog = new NoticeDialogFragment();
-
-        Bundle args = new Bundle();
-        args.putString("", " ");
-        dialog.setArguments(args);
-        dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
-    }
-
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-
-        // User touched the dialog's negative button - there isn't one so we really shouldn't get here
-
-        //if (BuildConfig.DEBUG) Log.w(TAG,"In alert cancel dialog");
-    }
-
-*/
         private void setHomeStatus (String playerStatus){
             homeStatus = playerStatus;
         }
