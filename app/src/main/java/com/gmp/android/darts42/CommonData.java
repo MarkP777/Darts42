@@ -7,10 +7,17 @@ public class CommonData {
 
     private String homeUserID;
     private String homeUserNickname;
+    private String homeUserEMail;
+
     public String getHomeUserID() {return homeUserID;}
     public void setHomeUserID(String data) {this.homeUserID = data;}
+
     public String getHomeUserNickname() {return homeUserNickname;}
     public void setHomeUserNickname(String data) {this.homeUserNickname = data;}
+
+    public String getHomeUserEMail() {return homeUserEMail;}
+
+    public void setHomeUserEMail(String homeUserEMail) {this.homeUserEMail = homeUserEMail;}
 
     private static final CommonData holder = new CommonData();
     public static CommonData getInstance() {return holder;}

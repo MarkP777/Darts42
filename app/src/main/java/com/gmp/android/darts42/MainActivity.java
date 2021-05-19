@@ -257,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
         //Put home user id in common data
         commonData.setHomeUserID(mUid);
         commonData.setHomeUserNickname(mUserNickname);
+        commonData.setHomeUserEMail(userEMailAddress);
 
         //Check to make sure that the player has a profile
         DatabaseReference playerProfileReference = mDatabase.getReference().child("player_profiles");

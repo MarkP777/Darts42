@@ -72,11 +72,14 @@ public class PlayDarts extends AppCompatActivity {
     RecyclerView recyclerView;
 
 
-
+    TextView setsText;
     TextView lSets;
     TextView rSets;
+    TextView d2SText;
+    TextView legsText;
     TextView lLegs;
     TextView rLegs;
+    TextView d2FText;
     TextView lName;
     TextView rName;
 
@@ -162,10 +165,15 @@ public class PlayDarts extends AppCompatActivity {
         fbDatabase = FirebaseDatabase.getInstance();
 
         //Find all the elements of the screen
+
+        setsText = (TextView) findViewById(R.id.tvSetsPrompt);
         lSets = (TextView) findViewById(R.id.tvlSets);
         rSets = (TextView) findViewById(R.id.tvrSets);
+        d2SText = (TextView) findViewById(R.id.tvD2SPrompt);
+        legsText = (TextView) findViewById(R.id.tvLegsPrompt);
         lLegs = (TextView) findViewById(R.id.tvlLegs);
         rLegs = (TextView) findViewById(R.id.tvrLegs);
+        d2FText = (TextView) findViewById(R.id.tvD2FPrompt);
         lName = (TextView) findViewById(R.id.tvlName);
         rName = (TextView) findViewById(R.id.tvrName);
         waitingMessage = (TextView) findViewById(R.id.tvWaitingMessage);
@@ -272,6 +280,14 @@ public class PlayDarts extends AppCompatActivity {
                         endWithDouble = matchDetails.getEndWithDouble();
                         setScores = matchDetails.getSetScores();
                         legScores = matchDetails.getLegScores();
+
+                        //Set up the headings
+                        setsText.setText(String.format("Sets (of %1$d)",matchDetails.getBestOfSets()));
+                        legsText.setText(String.format("Legs (of %1$d)",matchDetails.getBestOfLegs()));
+                        if (startWithDouble) {d2SText.setText("D2S");}
+                        else {d2SText.setText("");}
+                        if (endWithDouble) {d2FText.setText("D2F");}
+                        else {d2FText.setText("");}
 
                         //Now get the opponent details
                         getOpponentDetails();
@@ -505,8 +521,11 @@ public class PlayDarts extends AppCompatActivity {
                                  }
 
                                  scoreLinesIn4Columns.set(scoreLastPosition -3, scoreRecord.getThrowString()+String.format(" [%1d]",scoreRecord.getThrowScore()));
-                                 scoreLinesIn4Columns.set(scoreLastPosition -2, Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
-
+                                 if (scoreRecord.getLegFinished()) { //This go won the leg
+                                     scoreLinesIn4Columns.set(scoreLastPosition - 2,"W");
+                                 } else { ///Leg continues
+                                     scoreLinesIn4Columns.set(scoreLastPosition - 2, Integer.toString(scoreRecord.getTotalScore().get(myScoreIndex)));
+                                 }
                                 myGoNext = false; //Other player to go next
                                 // In this case it's the other player to go next
 
@@ -522,9 +541,13 @@ public class PlayDarts extends AppCompatActivity {
                                      scoresLeftColumnFilled = false;
                                  }
 
-                                scoreLinesIn4Columns.set(scoreLastPosition-1, Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
-                                scoreLinesIn4Columns.set(scoreLastPosition,String.format("[%1d] ",scoreRecord.getThrowScore())+scoreRecord.getThrowString());
-                                myGoNext = true; //Me to go
+                                 if (scoreRecord.getLegFinished()) { //This go won the leg
+                                     scoreLinesIn4Columns.set(scoreLastPosition - 1, "W");
+                                 } else { //Leg continues
+                                     scoreLinesIn4Columns.set(scoreLastPosition - 1, Integer.toString(scoreRecord.getTotalScore().get(theirScoreIndex)));
+                                 }
+                                 scoreLinesIn4Columns.set(scoreLastPosition,String.format("[%1d] ",scoreRecord.getThrowScore())+scoreRecord.getThrowString());
+                                 myGoNext = true; //Me to go
                             }
 
                         }
@@ -854,7 +877,7 @@ public class PlayDarts extends AppCompatActivity {
         if ((legScores.get(myScoreIndex) == 0) && (legScores.get(theirScoreIndex) == 0)) { //Leg scores are 0 so must have finished the set
             setOver = true;
             messageText = "Leg and set to ";
-            if ((setScores.get(myScoreIndex) == setsToWin) || (setScores.get(theirScoreIndex) == setsToWin)) { //Someone has won
+            if ((setScores.get(myScoreIndex) == setsToWin) || (setScores.get(theirScoreIndex) == setsToWin)) { //Someone has m
                 matchOver = true;
                 messageText = "Leg, set and match to ";
             }

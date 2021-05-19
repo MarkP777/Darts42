@@ -14,6 +14,15 @@
         android:orientation="vertical"
         />
     <TextView
+        android:id="@+id/tvSetsPrompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tvlSets"
+        android:text=""
+        android:gravity="left"
+        />
+    <TextView
         android:id="@+id/tvlSets"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,6 +44,24 @@
         android:gravity="left"
         />
     <TextView
+        android:id="@+id/tvD2SPrompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tvrSets"
+        android:text=""
+        android:gravity="right"
+        />
+    <TextView
+        android:id="@+id/tvLegsPrompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tvlLegs"
+        android:text=""
+        android:gravity="left"
+        />
+     <TextView
         android:id="@+id/tvlLegs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -53,6 +80,16 @@
         app:layout_constraintBottom_toBottomOf="@id/tvlLegs"
         android:text="0"
         android:gravity="left"
+        />
+
+    <TextView
+        android:id="@+id/tvD2FPrompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tvrLegs"
+        android:text=""
+        android:gravity="right"
         />
 
     <TextView

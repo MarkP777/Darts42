@@ -241,54 +241,60 @@ public class IssueChallenge extends AppCompatActivity {
 
     public void checkOpponent(View view) {
 
-        DatabaseReference playerProfilesReference = mScoresDatabase.getReference().child("player_profiles");
-        Query data = playerProfilesReference.orderByChild("playerEMail").equalTo(awayEMail).limitToFirst(1);
-        data.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+        //Cannot challenge yourself
+        if (awayEMail.equals(commonData.getHomeUserEMail())) {
+            opponentNameConfirm.setText("Cannot challenge yourself. Please select another player");
+        }
+        //Get opponent profile
+        else {
+            DatabaseReference playerProfilesReference = mScoresDatabase.getReference().child("player_profiles");
+            Query data = playerProfilesReference.orderByChild("playerEMail").equalTo(awayEMail).limitToFirst(1);
+            data.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                if (snapshot.exists()) {
-                    // Get the opponent's details
-                    for (DataSnapshot childSnapshot : snapshot.getChildren()) {
-                        founduserid = childSnapshot.getKey();
-                        Log.d(TAG, "Challenger user profile found " + founduserid);
-                        awayProfile = childSnapshot.getValue(PlayerProfile.class);
-                        opponentNameConfirm.setText(awayProfile.getPlayerName());
-                        if (awayProfile.getPlayerEngaged())
-                            //Opponent's busy flag set
-                            opponentNameConfirm.setText(awayProfile.getPlayerName() + "is busy. Please select another opponent.");
-
-                        else {
-                            //Opponent is not busy
+                    if (snapshot.exists()) {
+                        // Get the opponent's details
+                        for (DataSnapshot childSnapshot : snapshot.getChildren()) {
+                            founduserid = childSnapshot.getKey();
+                            Log.d(TAG, "Challenger user profile found " + founduserid);
+                            awayProfile = childSnapshot.getValue(PlayerProfile.class);
                             opponentNameConfirm.setText(awayProfile.getPlayerName());
+                            if (awayProfile.getPlayerEngaged())
+                                //Opponent's busy flag set
+                                opponentNameConfirm.setText(awayProfile.getPlayerName() + "is busy. Please select another opponent.");
 
-                            //Disable any changes to the opponent ...
-                            emailValidate.setEnabled(false);
-                            checkOpponentButton.setEnabled(false);
+                            else {
+                                //Opponent is not busy
+                                opponentNameConfirm.setText(awayProfile.getPlayerName());
 
-                            //... and enable the match detail input
-                            startSpinner.setEnabled(true);
-                            setsSpinner.setEnabled(true);
-                            legsSpinner.setEnabled(true);
-                            doubleToStartSwitch.setEnabled(true);
-                            doubleToFinishSwitch.setEnabled(true);
-                            sendChallengeButton.setEnabled(true);
+                                //Disable any changes to the opponent ...
+                                emailValidate.setEnabled(false);
+                                checkOpponentButton.setEnabled(false);
+
+                                //... and enable the match detail input
+                                startSpinner.setEnabled(true);
+                                setsSpinner.setEnabled(true);
+                                legsSpinner.setEnabled(true);
+                                doubleToStartSwitch.setEnabled(true);
+                                doubleToFinishSwitch.setEnabled(true);
+                                sendChallengeButton.setEnabled(true);
+                            }
                         }
+                    } else {
+                        //Couldn't find a profile
+                        Log.d(TAG, "No challenger user profile found");
+                        opponentNameConfirm.setText("Cannot find player with this email address. Please try again");
                     }
                 }
-                else {
-                    //Couldn't find a profile
-                    Log.d(TAG, "No challenger user profile found");
-                    opponentNameConfirm.setText("Cannot find player with this email address. Please try again");
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
                 }
-            }
+            });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
+        }
 }
 
     public void sendChallenge(View view) {
