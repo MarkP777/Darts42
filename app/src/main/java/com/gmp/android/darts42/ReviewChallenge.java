@@ -140,7 +140,7 @@ public class ReviewChallenge extends AppCompatActivity {
                                         + Integer.toString(matchDetails.getBestOfSets())
                                         + " set(s), each best of "
                                         + Integer.toString(matchDetails.getBestOfLegs())
-                                        + " legs");
+                                        + " leg(s)");
                                 startDoubles.setText(startDoubleString);
                                 declineChallengeButton.setEnabled(true);
                                 acceptChallengeButton.setEnabled(true);

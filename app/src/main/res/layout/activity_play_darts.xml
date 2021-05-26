@@ -283,6 +283,7 @@
             android:layout_width="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="0"
+            android:visibility="invisible"
             />
 
         <TextView
@@ -293,6 +294,7 @@
             android:layout_width="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="0"
+            android:visibility="invisible"
             />
 
         <TextView
@@ -303,6 +305,7 @@
             android:layout_width="wrap_content"
             android:layout_marginLeft="20dp"
             android:text="0"
+            android:visibility="invisible"
             />
 
     <TextView
@@ -315,23 +318,36 @@
         android:gravity="center_horizontal"
         />
 
+    <!--
+    Experimenting with not showing the Dart 3 scores, cos they just flash by if shown
     <androidx.constraintlayout.widget.Group
         android:id="@+id/gScoreSection"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:constraint_referenced_ids="
         btd1,etd1Input,tvd1Prompt,tvd1ScoreThisDart,tvd1ScoreThisTurn,tvd1ScoreTotal,
         btd2,etd2Input,tvd2Prompt,tvd2ScoreThisDart,tvd2ScoreThisTurn,tvd2ScoreTotal,
         btd3,etd3Input,tvd3Prompt,tvd3ScoreThisDart,tvd3ScoreThisTurn,tvd3ScoreTotal
         "
         />
-
+-->
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/gScoreSection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:constraint_referenced_ids="
+        btd1,etd1Input,tvd1Prompt,tvd1ScoreThisDart,tvd1ScoreThisTurn,tvd1ScoreTotal,
+        btd2,etd2Input,tvd2Prompt,tvd2ScoreThisDart,tvd2ScoreThisTurn,tvd2ScoreTotal,
+        btd3,etd3Input,tvd3Prompt
+        "
+/>
     <androidx.constraintlayout.widget.Group
         android:id="@+id/gd1Section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:constraint_referenced_ids="
         btd1,etd1Input,tvd1Prompt,tvd1ScoreThisDart,tvd1ScoreThisTurn,tvd1ScoreTotal
         "
@@ -341,7 +357,7 @@
         android:id="@+id/gd2Section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:constraint_referenced_ids="
         btd2,etd2Input,tvd2Prompt,tvd2ScoreThisDart,tvd2ScoreThisTurn,tvd2ScoreTotal
         "
@@ -351,9 +367,9 @@
         android:id="@+id/gd3Section"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:constraint_referenced_ids="
-        btd3,etd3Input,tvd3Prompt,tvd3ScoreThisDart,tvd3ScoreThisTurn,tvd3ScoreTotal
+        btd3,etd3Input,tvd3Prompt
         "
         />
 

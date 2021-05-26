@@ -660,6 +660,7 @@ public class PlayDarts extends AppCompatActivity {
         d3ScoreTotal.setText("");
 
         //setDartInputFilters(d3Input,d3Send);
+
         d3Section.setVisibility(View.VISIBLE);
         d3Send.setEnabled(false);
         d3Input.setFocusableInTouchMode(true);
