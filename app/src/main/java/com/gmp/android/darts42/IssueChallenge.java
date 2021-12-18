@@ -103,6 +103,11 @@ public class IssueChallenge extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_issue_challenge);
 
+        /*
+        setSupportActionBar(findViewById(R.id.issue_challenge_toolbar));
+        getSupportActionBar().setTitle("Darts 42 - Issue Challenge");
+
+         */
         mScoresDatabase = FirebaseDatabase.getInstance();
         checkOpponentButton = (Button) findViewById(R.id.btCheckOpponent);
 
@@ -141,13 +146,13 @@ public class IssueChallenge extends AppCompatActivity {
 
         intValue = 1;
         for (counter = 0; counter < 7; counter++) {
-            setsValues[counter] = String.format("%1$2d", intValue);
+            setsValues[counter] = String.format("%1$d", intValue);
             intValue = intValue +2;
         }
 
         intValue = 1;
         for (counter = 0; counter < 6; counter++) {
-            legsValues[counter] = String.format("%1$2d", intValue);
+            legsValues[counter] = String.format("%1$d", intValue);
             intValue = intValue + 2;
         }
 

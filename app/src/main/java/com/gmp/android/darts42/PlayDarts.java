@@ -164,6 +164,10 @@ public class PlayDarts extends AppCompatActivity {
         setContentView(R.layout.activity_play_darts);
         fbDatabase = FirebaseDatabase.getInstance();
 
+/*
+        setSupportActionBar(findViewById(R.id.play_darts_toolbar));
+        getSupportActionBar().setTitle("Darts 42 - Game On");
+*/
         //Find all the elements of the screen
 
         setsText = (TextView) findViewById(R.id.tvSetsPrompt);

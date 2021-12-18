@@ -71,6 +71,10 @@ public class ReviewChallenge extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_review_challenge);
 
+/*
+        setSupportActionBar(findViewById(R.id.review_challenge_toolbar));
+        getSupportActionBar().setTitle("Darts 42 - Review Challenge");
+ */
         //Assume that we are passed - ownID, and all the details from the challenge record
 
         mDatabase = FirebaseDatabase.getInstance();

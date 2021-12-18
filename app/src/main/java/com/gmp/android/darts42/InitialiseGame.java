@@ -15,6 +15,7 @@ public class InitialiseGame extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /*
         setContentView(R.layout.activity_initialise_game);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -27,5 +28,6 @@ public class InitialiseGame extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        */
     }
 }

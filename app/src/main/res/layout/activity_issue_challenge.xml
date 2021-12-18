@@ -6,136 +6,120 @@
     android:layout_height="match_parent"
     tools:context=".IssueChallenge">
 
-
-    <TextView
-        android:id="@+id/tvChallengeTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create Challenge"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
+    <!--androidx.appcompat.widget.Toolbar
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="50dp"
-         />
+        android:id="@+id/issue_challenge_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        / -->
 
     <TextView
         android:id="@+id/tvOpponentEmailPrompt"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tvChallengeTitle"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
-        app:layout_constraintWidth_default="percent"
-        app:layout_constraintWidth_percent=".25"
-        android:layout_width="0dp"
+        android:layout_marginTop="50dp"
         android:text="Opponent"
-         />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/tvOpponentEmail"
-        app:layout_constraintLeft_toRightOf="@+id/tvOpponentEmailPrompt"
-        app:layout_constraintBottom_toBottomOf="@id/tvOpponentEmailPrompt"
-        app:layout_constraintWidth_default="percent"
-        app:layout_constraintWidth_percent=".25"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:inputType="textEmailAddress"
-        android:importantForAutofill="no"
+        android:layout_marginRight="20dp"
         android:hint="Opponent's email address"
-        />
+        android:importantForAutofill="no"
+        android:inputType="textEmailAddress"
+        android:textSize="14sp"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvOpponentEmailPrompt"
+        app:layout_constraintLeft_toLeftOf="@id/tvOpponentNameConfirm"
+        app:layout_constraintRight_toLeftOf="@id/btCheckOpponent" />
 
     <Button
         android:id="@+id/btCheckOpponent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:onClick="checkOpponent"
         android:text="Check"
-        app:layout_constraintBottom_toBottomOf="@id/tvOpponentEmail"
-        app:layout_constraintLeft_toRightOf="@id/tvOpponentEmail" />
+        app:layout_constraintBaseline_toBaselineOf="@id/tvOpponentEmailPrompt"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <TextView
         android:id="@+id/tvOpponentNameConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="@+id/tvOpponentEmail"
-        app:layout_constraintTop_toBottomOf="@id/tvOpponentEmail"
         android:layout_marginTop="10dp"
         android:text="TBD"
-        />
+        app:layout_constraintLeft_toLeftOf="@+id/spStart"
+        app:layout_constraintTop_toBottomOf="@id/tvOpponentEmail" />
 
     <TextView
         android:id="@+id/tvStartPrompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start at"
-        app:layout_constraintTop_toBottomOf="@id/tvOpponentNameConfirm"
-        app:layout_constraintLeft_toLeftOf="@id/tvOpponentEmailPrompt"
         android:layout_marginTop="30dp"
-         />
+        android:text="Start at"
+        app:layout_constraintLeft_toLeftOf="@id/tvOpponentEmailPrompt"
+        app:layout_constraintTop_toBottomOf="@id/tvOpponentNameConfirm" />
 
     <Spinner
         android:id="@+id/spStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@id/tvStartPrompt"
-        app:layout_constraintBottom_toBottomOf="@id/tvStartPrompt"
-        android:layout_marginLeft="20dp"
-         />
+        app:layout_constraintBaseline_toBaselineOf="@id/tvStartPrompt"
+        app:layout_constraintLeft_toLeftOf="@id/spMaxSets" />
 
 
     <TextView
         android:id="@+id/tvNumberOfSetsPrompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Best of Sets"
-        app:layout_constraintTop_toBottomOf="@id/tvStartPrompt"
-        app:layout_constraintLeft_toLeftOf="@id/tvStartPrompt"
         android:layout_marginTop="30dp"
-        />
+        android:text="Best of Sets"
+        app:layout_constraintLeft_toLeftOf="@id/tvStartPrompt"
+        app:layout_constraintTop_toBottomOf="@id/tvStartPrompt" />
 
     <Spinner
         android:id="@+id/spMaxSets"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@id/tvNumberOfSetsPrompt"
-        app:layout_constraintBottom_toBottomOf="@id/tvNumberOfSetsPrompt"
-        android:layout_marginLeft="20dp"
-        />
+        android:layout_marginLeft="10dp"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvNumberOfSetsPrompt"
+        app:layout_constraintLeft_toRightOf="@id/tvNumberOfSetsPrompt" />
 
     <TextView
         android:id="@+id/tvMaxLegsPrompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
         android:text="Legs per Set"
-        app:layout_constraintLeft_toRightOf="@id/spMaxSets"
-        app:layout_constraintBottom_toBottomOf="@id/spMaxSets"
-        android:layout_marginLeft="20dp"
-        />
+        app:layout_constraintBaseline_toBaselineOf="@id/spMaxSets"
+        app:layout_constraintLeft_toRightOf="@id/spMaxSets" />
 
 
     <Spinner
         android:id="@+id/spMaxLegs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Best of Legs per Set"
-        app:layout_constraintLeft_toRightOf="@id/tvMaxLegsPrompt"
-        app:layout_constraintBottom_toBottomOf="@id/tvMaxLegsPrompt"
         android:layout_marginLeft="20dp"
-        />
+        android:text="Best of Legs per Set"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvMaxLegsPrompt"
+        app:layout_constraintLeft_toRightOf="@id/tvMaxLegsPrompt" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/swDoubleToStartPrompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Doubles: to start"
+        android:layout_marginTop="30dp"
         android:checked="false"
+        android:text="Doubles: to start"
         app:layout_constraintLeft_toLeftOf="@id/tvNumberOfSetsPrompt"
         app:layout_constraintTop_toBottomOf="@id/tvNumberOfSetsPrompt"
-        android:layout_marginTop="30dp"
 
-  />
+        />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/swDoubleToFinishPrompt"
@@ -143,32 +127,36 @@
         android:layout_height="wrap_content"
         android:checked="true"
         android:text="to finish"
-        app:layout_constraintLeft_toLeftOf="@id/tvMaxLegsPrompt"
         app:layout_constraintBottom_toBottomOf="@id/swDoubleToStartPrompt"
-        />
+        app:layout_constraintLeft_toLeftOf="@id/tvMaxLegsPrompt" />
 
     <Button
         android:id="@+id/btSendChallenge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
         android:onClick="sendChallenge"
         android:text="Send challenge"
-        app:layout_constraintTop_toBottomOf="@id/swDoubleToStartPrompt"
         app:layout_constraintRight_toRightOf="@id/btCheckOpponent"
-        android:layout_marginTop="30dp"
-        />
+        app:layout_constraintTop_toBottomOf="@id/swDoubleToStartPrompt" />
 
 
     <TextView
         android:id="@+id/tvChallengeCountdown"
-        android:text=""
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text=""
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btSendChallenge"
-        android:layout_marginTop="30dp"
-        />
+        app:layout_constraintTop_toBottomOf="@id/btSendChallenge" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="-87dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -96,6 +96,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        //setSupportActionBar(findViewById(R.id.main_toolbar));
+        //getSupportActionBar().setTitle("Darts 42");
+
+        //getSupportActionBar().setDisplayShowTitleEnabled(false);
+
         actionButton = (Button) findViewById(R.id.btAction);
         actionButton.setEnabled(false);
 

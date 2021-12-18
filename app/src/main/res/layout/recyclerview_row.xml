@@ -4,7 +4,10 @@
     android:layout_height="wrap_content"
     android:id="@+id/scoreRow"
     android:orientation="horizontal"
-    android:padding="10dp">
+    android:paddingTop="15dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="0dp">
 
 
     <TextView
@@ -12,6 +15,7 @@
         android:paddingBottom="5dp"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:textColor="@color/white"
         android:id="@+id/col1TextView"
         />
 

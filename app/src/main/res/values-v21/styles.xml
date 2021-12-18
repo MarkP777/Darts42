@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+    <style name="AppTheme" parent="Theme.Darts42">
+        <item name="actionBarStyle">@style/AppActionBarStyle21</item>
+    </style>
+
+    <style name="AppActionBarStyle21" parent="Widget.MaterialComponents.ActionBar.Solid">
+        <item name="background">@color/dartsboard_red</item>
+    </style>
+    -->
+</resources>

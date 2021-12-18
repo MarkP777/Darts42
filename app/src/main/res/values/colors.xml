@@ -7,4 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="yellow_background">#fff59d</color>
+    <color name="dartsboard_green">#1b5e20</color>
+    <color name="dartsboard_red">#DE0112</color>
 </resources>
