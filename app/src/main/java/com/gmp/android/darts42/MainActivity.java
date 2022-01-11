@@ -375,7 +375,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Default case - nothing happening
         whatsHappeningText.setText("You have no matches in progress nor any challenges");
-        actionButton.setText("New match");
+        actionButton.setText(String.format("New%nmatch"));
 
         switch (buttonState) {
             case 100: //Nothing happening
@@ -394,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else { //Still current
                     whatsHappeningText.setText("You have received a challenge from another player");
-                    actionButton.setText("Review challenge");
+                    actionButton.setText(String.format("Review%nchallenge"));
                     actionButton.setEnabled(true);
                 }
                 break;
@@ -403,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
             case 102: //Game in progress
                 //TODO Elaborate
                 whatsHappeningText.setText("You are playing a match");
-                actionButton.setText("Continue match");
+                actionButton.setText(String.format("Continue%nmatch"));
                 actionButton.setEnabled(true);
                 break;
 
