@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/button_double"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Double"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/button_treble"
+            app:layout_constraintHorizontal_chainStyle="spread"/>
+        <Button
+            android:id="@+id/button_treble"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Treble"
+            app:layout_constraintBottom_toBottomOf="@id/button_double"
+            app:layout_constraintLeft_toRightOf="@id/button_double"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <Button
+            android:id="@+id/button_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="1"
+            app:layout_constraintTop_toBottomOf="@id/button_double"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/button_2"
+            app:layout_constraintHorizontal_chainStyle="spread"/>
+
+        <Button
+            android:id="@+id/button_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="2"
+            app:layout_constraintBottom_toBottomOf="@id/button_1"
+            app:layout_constraintLeft_toRightOf="@id/button_1"
+            app:layout_constraintRight_toLeftOf="@id/button_3"/>
+
+        <Button
+            android:id="@+id/button_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="3"
+            app:layout_constraintBottom_toBottomOf="@id/button_2"
+            app:layout_constraintLeft_toRightOf="@id/button_2"
+            app:layout_constraintRight_toLeftOf="@id/button_4"/>
+
+        <Button
+            android:id="@+id/button_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="4"
+            app:layout_constraintBottom_toBottomOf="@id/button_3"
+            app:layout_constraintLeft_toRightOf="@id/button_3"
+            app:layout_constraintRight_toLeftOf="@id/button_5"/>
+
+        <Button
+            android:id="@+id/button_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="5"
+            app:layout_constraintBottom_toBottomOf="@id/button_4"
+            app:layout_constraintLeft_toRightOf="@id/button_4"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <Button
+            android:id="@+id/button_6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="6"
+            app:layout_constraintTop_toBottomOf="@id/button_1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/button_7"
+            app:layout_constraintHorizontal_chainStyle="spread"/>
+
+        <Button
+            android:id="@+id/button_7"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="7"
+            app:layout_constraintBottom_toBottomOf="@id/button_6"
+            app:layout_constraintLeft_toRightOf="@id/button_6"
+            app:layout_constraintRight_toLeftOf="@id/button_8"/>
+
+        <Button
+            android:id="@+id/button_8"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="8"
+            app:layout_constraintBottom_toBottomOf="@id/button_7"
+            app:layout_constraintLeft_toRightOf="@id/button_7"
+            app:layout_constraintRight_toLeftOf="@id/button_9"/>
+
+        <Button
+            android:id="@+id/button_9"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="9"
+            app:layout_constraintBottom_toBottomOf="@id/button_8"
+            app:layout_constraintLeft_toRightOf="@id/button_8"
+            app:layout_constraintRight_toLeftOf="@id/button_0"/>
+
+        <Button
+            android:id="@+id/button_0"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="0"
+            app:layout_constraintBottom_toBottomOf="@id/button_9"
+            app:layout_constraintLeft_toRightOf="@id/button_9"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <Button
+            android:id="@+id/button_outer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Outer"
+            app:layout_constraintTop_toBottomOf="@id/button_6"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/button_bull"
+            app:layout_constraintHorizontal_chainStyle="spread"/>
+
+        <Button
+            android:id="@+id/button_bull"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Bull"
+            app:layout_constraintBottom_toBottomOf="@id/button_outer"
+            app:layout_constraintLeft_toRightOf="@id/button_outer"
+            app:layout_constraintRight_toLeftOf="@id/button_miss"/>
+
+        <Button
+            android:id="@+id/button_miss"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Miss"
+            app:layout_constraintBottom_toBottomOf="@id/button_bull"
+            app:layout_constraintLeft_toRightOf="@id/button_bull"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <Button
+            android:id="@+id/button_delete"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Delete"
+            app:layout_constraintTop_toBottomOf="@id/button_outer"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/button_enter"
+            app:layout_constraintHorizontal_chainStyle="spread"/>
+
+        <Button
+            android:id="@+id/button_enter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Done"
+            app:layout_constraintBottom_toBottomOf="@id/button_delete"
+            app:layout_constraintLeft_toRightOf="@id/button_delete"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</merge>

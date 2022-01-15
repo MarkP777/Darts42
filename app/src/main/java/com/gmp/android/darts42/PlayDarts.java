@@ -2,6 +2,7 @@ package com.gmp.android.darts42;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Group;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,9 +11,12 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -83,6 +87,7 @@ public class PlayDarts extends AppCompatActivity {
     TextView lName;
     TextView rName;
 
+    TextView scoreTotal;
     TextView d1ScoreThisDart;
     TextView d1ScoreThisTurn;
     TextView d1ScoreTotal;
@@ -92,12 +97,13 @@ public class PlayDarts extends AppCompatActivity {
     TextView d3ScoreThisDart;
     TextView d3ScoreThisTurn;
     TextView d3ScoreTotal;
+    TextView d3Prompt;
 
     Button d1Send;
     Button d2Send;
     Button d3Send;
 
-
+    ThrowKeyboard throwKeyboard;
 
     Group scoreSection;
     Group d1Section;
@@ -183,6 +189,7 @@ public class PlayDarts extends AppCompatActivity {
         waitingMessage = (TextView) findViewById(R.id.tvWaitingMessage);
         gameMessage = (TextView) findViewById(R.id.tvGameMessage);
 
+        scoreTotal = (TextView) findViewById(R.id.tvScoreTotal);
         d1ScoreThisDart = (TextView) findViewById(R.id.tvd1ScoreThisDart);
         d1ScoreThisTurn = (TextView) findViewById(R.id.tvd1ScoreThisTurn);
         d1ScoreTotal = (TextView)  findViewById(R.id.tvd1ScoreTotal);
@@ -192,6 +199,7 @@ public class PlayDarts extends AppCompatActivity {
         d3ScoreThisDart = (TextView) findViewById(R.id.tvd3ScoreThisDart);
         d3ScoreThisTurn = (TextView) findViewById(R.id.tvd3ScoreThisTurn);
         d3ScoreTotal = (TextView)  findViewById(R.id.tvd3ScoreTotal);
+        d3Prompt = (TextView) findViewById(R.id.tvd3Prompt) ;
 
         d1Send = (Button) findViewById(R.id.btd1);
         d2Send = (Button) findViewById(R.id.btd2);
@@ -207,10 +215,11 @@ public class PlayDarts extends AppCompatActivity {
         d2Input = (EditText) findViewById(R.id.etd2Input);
         d3Input = (EditText) findViewById(R.id.etd3Input);
 
+        throwKeyboard = (ThrowKeyboard) findViewById(R.id.throwKeyboard);
+
         setDartInputFilters(d1Input,d1Send);
         setDartInputFilters(d2Input,d2Send);
         setDartInputFilters(d3Input,d3Send);
-
         //Get who we are
         commonData = CommonData.getInstance();
         myUId = commonData.getHomeUserID();
@@ -622,8 +631,20 @@ public class PlayDarts extends AppCompatActivity {
     private void getDart1() {
 
         waitingMessage.setVisibility(View.INVISIBLE);
+        scoreTotal.setText(Integer.toString(myTotalScore));
         scoreSection.setVisibility(View.VISIBLE);
+
+        //make sure that the input is clear
         d1Input.getText().clear();
+
+        // prevent system keyboard from appearing when d1Input is tapped
+        d1Input.setRawInputType(InputType.TYPE_CLASS_TEXT);
+        d1Input.setTextIsSelectable(false);
+
+        // pass the InputConnection from d1Input to the keyboard
+        InputConnection ic = d1Input.onCreateInputConnection(new EditorInfo());
+        throwKeyboard.setInputConnection(ic);
+
         d1ScoreThisDart.setText("");
         d1ScoreThisTurn.setText("");
         d1ScoreTotal.setText("");
@@ -637,7 +658,44 @@ public class PlayDarts extends AppCompatActivity {
         d2Section.setVisibility(View.INVISIBLE);
         d3Section.setVisibility(View.INVISIBLE);
 
+        // Add a listener that is looking for the Send key (char 10) - proess throw when detecyed
+
+        d1Input.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+
+                int stringLength = s.length();
+                int lastCharacter;
+
+                if (stringLength > 0) {
+
+                    lastCharacter = (int) s.charAt(s.length() - 1);
+
+                    if (lastCharacter == 10) {
+                        Log.d(TAG, s.toString() + " entered ");
+                        dart1Thrown();
+
+                    } else {
+                        Log.d(TAG, s.toString() + " not entered yet ");
+                    }
+                }
+            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+        });
+
+        // Show the keyboard and move the rest of the screen up above it
+        throwKeyboard.setVisibility(View.VISIBLE);
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) d3Prompt.getLayoutParams();
+        params.bottomToTop = throwKeyboard.getId();
+        d3Prompt.setLayoutParams(params);
+
+
     } //Ends getDart1()
+
+
 
     private void getDart2() {
 
@@ -674,7 +732,46 @@ public class PlayDarts extends AppCompatActivity {
 
     } //Ends getDart3()
 
-        public void dart1Thrown(View view) {
+
+    public void dart1Thrown() {
+
+        //Player has entered the score. Prevent them from going back to edit it
+        d1Input.setFocusable(false);
+        d1Send.setEnabled(false);
+        d1Send.setVisibility(View.INVISIBLE);
+
+        dart.analyse(d1Input.getText().toString().trim());
+
+        throwString = dart.string;
+        bustThisThrow = false;
+        wonLegThisThrow = false;
+        scoreThisDart = dart.score;
+
+        // score for the dart might be modified by start and finish conditions
+        scoreThisTurn = scoreThisDart;
+        checkStartAndFinishConditions();
+        myTotalScore = myTotalScore - scoreThisDart;
+
+        //Write them to the screen
+        d1ScoreThisDart.setText(Integer.toString(scoreThisDart));
+        d1ScoreThisTurn.setText(Integer.toString(scoreThisTurn));
+        d1ScoreTotal.setText(Integer.toString(myTotalScore));
+
+        if (bustThisThrow || wonLegThisThrow) {
+            throwKeyboard.setVisibility(View.GONE);
+            finishThrow();
+        }
+        else {
+
+            throwKeyboard.setVisibility(View.GONE);
+
+            getDart2();
+        }
+
+    } //Ends dart1Thrown
+
+/*
+    public void dart1Thrown(View view) {
 
             //Player has entered the score. Prevent them from going back to edit it
             d1Input.setFocusable(false);
@@ -707,7 +804,7 @@ public class PlayDarts extends AppCompatActivity {
             }
 
         } //Ends dart1Thrown
-
+*/
     public void dart2Thrown(View view) {
 
         //Player has entered the score. Prevent them from going back to edit it
