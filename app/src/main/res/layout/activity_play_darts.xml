@@ -17,11 +17,10 @@
         android:id="@+id/topBackground"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/black"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/rvScores"
+        app:layout_constraintBottom_toTopOf="@id/tvWaitingMessage"
         />
 
 
@@ -41,7 +40,6 @@
         android:text=""
         android:gravity="left"
         android:layout_marginLeft="5dp"
-        style="@style/AppChalkboardText"
         />
     <TextView
         android:id="@+id/tvlSets"
@@ -53,7 +51,6 @@
         android:layout_marginRight="10dp"
         android:text="0"
         android:gravity="right"
-        style="@style/AppChalkboardText"
         />
     <TextView
         android:id="@+id/tvrSets"
@@ -64,7 +61,6 @@
         android:layout_marginLeft="10dp"
         android:text="0"
         android:gravity="left"
-        style="@style/AppChalkboardText"
         />
     <TextView
         android:id="@+id/tvD2SPrompt"
@@ -75,7 +71,6 @@
         android:text=""
         android:gravity="right"
         android:layout_marginRight="5dp"
-        style="@style/AppChalkboardText"
         />
     <TextView
         android:id="@+id/tvLegsPrompt"
@@ -86,7 +81,6 @@
         android:text=""
         android:gravity="left"
         android:layout_marginLeft="5dp"
-        style="@style/AppChalkboardText"
         />
      <TextView
         android:id="@+id/tvlLegs"
@@ -97,7 +91,6 @@
         android:layout_marginTop="15dp"
         android:text="0"
         android:gravity="right"
-         style="@style/AppChalkboardText"
         />
 
     <TextView
@@ -108,7 +101,6 @@
         app:layout_constraintBottom_toBottomOf="@id/tvlLegs"
         android:text="0"
         android:gravity="left"
-        style="@style/AppChalkboardText"
         />
 
     <TextView
@@ -120,7 +112,6 @@
         android:text=""
         android:gravity="right"
         android:layout_marginRight="5dp"
-        style="@style/AppChalkboardText"
         />
 
     <TextView
@@ -132,7 +123,6 @@
         android:layout_marginTop="15dp"
         android:text="Name"
         android:gravity="right"
-        style="@style/AppChalkboardText"
         android:textStyle="bold"
         android:textSize="18dp"
         />
@@ -145,7 +135,6 @@
         app:layout_constraintBottom_toBottomOf="@id/tvlName"
         android:text="Name"
         android:gravity="left"
-        style="@style/AppChalkboardText"
         android:textStyle="bold"
         android:textSize="18dp"
         />
@@ -161,7 +150,6 @@
         android:layout_height="wrap_content"
         app:layout_constrainedHeight="true"
         android:layout_width="wrap_content"
-        style="@style/AppChalkboardText"
         />
 
 
@@ -172,215 +160,93 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tvd1Prompt"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
         android:textStyle="bold"
+        android:textSize="24dp"
         />
 
     <TextView
         android:id="@+id/tvd1Prompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="@id/tvd3Prompt"
-        app:layout_constraintBottom_toTopOf="@id/tvd2Prompt"
-        android:layout_marginBottom="20dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tvWaitingMessage"
         android:text="Dart 1"
         />
 
 
     <EditText
         android:id="@+id/etd1Input"
-        app:layout_constraintLeft_toLeftOf="@id/etd3Input"
+        app:layout_constraintLeft_toRightOf="@id/tvd1Prompt"
         app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        />
-
-
-    <Button
-        android:id="@+id/btd1"
-        app:layout_constraintLeft_toLeftOf="@id/btd3"
-        app:layout_constraintBottom_toBottomOf="@id/etd1Input"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="->"
-        android:onClick="dart1Thrown"
+        android:layout_marginLeft="5dp"
         />
 
     <TextView
-        android:id="@+id/tvd1ScoreThisDart"
-        app:layout_constraintLeft_toLeftOf="@id/tvd3ScoreThisDart"
+        android:id="@+id/tvd1Score"
+        app:layout_constraintLeft_toRightOf="@id/etd1Input"
         app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_marginLeft="5dp"
         android:text="0"
         />
-
-    <TextView
-        android:id="@+id/tvd1ScoreThisTurn"
-        app:layout_constraintLeft_toLeftOf="@id/tvd3ScoreThisTurn"
-        app:layout_constraintBottom_toBottomOf="@id/tvd1ScoreThisDart"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="0"
-        />
-
-    <TextView
-        android:id="@+id/tvd1ScoreTotal"
-        app:layout_constraintLeft_toLeftOf="@id/tvd3ScoreTotal"
-        app:layout_constraintBottom_toBottomOf="@id/tvd1ScoreThisTurn"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="0"
-        />
-
-
 
     <TextView
             android:id="@+id/tvd2Prompt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintLeft_toLeftOf="@id/tvd3Prompt"
-            app:layout_constraintBottom_toTopOf="@id/tvd3Prompt"
-            android:layout_marginBottom="20dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintHorizontal_bias="0.4"
+            app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
             android:text="Dart 2"
             />
 
 
         <EditText
             android:id="@+id/etd2Input"
-            app:layout_constraintLeft_toLeftOf="@id/etd3Input"
-            app:layout_constraintBaseline_toBaselineOf="@id/tvd2Prompt"
+            app:layout_constraintLeft_toRightOf="@id/tvd2Prompt"
+            app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
+            android:layout_marginLeft="5dp"
             />
 
 
-        <Button
-            android:id="@+id/btd2"
-            app:layout_constraintLeft_toLeftOf="@id/btd3"
-            app:layout_constraintBottom_toBottomOf="@id/etd2Input"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="->"
-            android:onClick="dart2Thrown"
-            />
-
-        <TextView
-            android:id="@+id/tvd2ScoreThisDart"
-            app:layout_constraintLeft_toLeftOf="@id/tvd3ScoreThisDart"
-            app:layout_constraintBaseline_toBaselineOf="@id/tvd2Prompt"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="0"
-            />
-
-        <TextView
-            android:id="@+id/tvd2ScoreThisTurn"
-            app:layout_constraintLeft_toLeftOf="@id/tvd3ScoreThisTurn"
-            app:layout_constraintBottom_toBottomOf="@id/tvd2ScoreThisDart"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="0"
-            />
-
-        <TextView
-            android:id="@+id/tvd2ScoreTotal"
-            app:layout_constraintLeft_toLeftOf="@id/tvd3ScoreTotal"
-            app:layout_constraintBottom_toBottomOf="@id/tvd2ScoreThisTurn"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="0"
-            />
-
+    <TextView
+        android:id="@+id/tvd2Score"
+        app:layout_constraintLeft_toRightOf="@id/etd2Input"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:text="0"
+        />
 
     <TextView
         android:id="@+id/tvd3Prompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
         android:text="Dart 3"
-        app:layout_constraintBottom_toTopOf="@id/tvGameMessage"
-        app:layout_constraintLeft_toLeftOf="parent" />
-
-
-        <EditText
-            android:id="@+id/etd3Input"
-            app:layout_constraintLeft_toRightOf="@id/tvd3Prompt"
-            app:layout_constraintBaseline_toBaselineOf="@id/tvd3Prompt"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="20dp"
-             android:inputType="textFilter"
-            />
-
-
-        <Button
-            android:id="@+id/btd3"
-            app:layout_constraintLeft_toLeftOf="@id/etd3Input"
-            app:layout_constraintBottom_toBottomOf="@id/etd3Input"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="70dp"
-            android:text="->"
-            android:onClick="dart3Thrown"
-            />
-
-        <TextView
-            android:id="@+id/tvd3ScoreThisDart"
-            app:layout_constraintLeft_toRightOf="@id/btd3"
-            app:layout_constraintBaseline_toBaselineOf="@id/tvd3Prompt"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:text="0"
-            android:visibility="invisible"
-            />
-
-        <TextView
-            android:id="@+id/tvd3ScoreThisTurn"
-            app:layout_constraintLeft_toRightOf="@id/tvd3ScoreThisDart"
-            app:layout_constraintBottom_toBottomOf="@id/tvd3ScoreThisDart"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:text="0"
-            android:visibility="invisible"
-            />
-
-        <TextView
-            android:id="@+id/tvd3ScoreTotal"
-            app:layout_constraintLeft_toRightOf="@id/tvd3ScoreThisTurn"
-            app:layout_constraintBottom_toBottomOf="@id/tvd3ScoreThisTurn"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:text="0"
-            android:visibility="invisible"
-            />
-
-    <TextView
-        android:id="@+id/tvWaitingMessage"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="@id/tvd1Prompt"
-        app:layout_constraintBottom_toBottomOf="@id/tvd3ScoreTotal"
-        android:visibility="invisible"
-        android:gravity="center_horizontal"
         />
 
-    <!--
-    Experimenting with not showing the Dart 3 scores, cos they just flash by if shown
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/gScoreSection"
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/etd3Input"
+        app:layout_constraintLeft_toRightOf="@id/tvd3Prompt"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
-        app:constraint_referenced_ids="
-        btd1,etd1Input,tvd1Prompt,tvd1ScoreThisDart,tvd1ScoreThisTurn,tvd1ScoreTotal,
-        btd2,etd2Input,tvd2Prompt,tvd2ScoreThisDart,tvd2ScoreThisTurn,tvd2ScoreTotal,
-        btd3,etd3Input,tvd3Prompt,tvd3ScoreThisDart,tvd3ScoreThisTurn,tvd3ScoreTotal
-        "
+        android:layout_width="wrap_content"
+        android:layout_marginLeft="5dp"
         />
--->
+
     <androidx.constraintlayout.widget.Group
         android:id="@+id/gScoreSection"
         android:layout_width="wrap_content"
@@ -388,9 +254,9 @@
         android:visibility="invisible"
         app:constraint_referenced_ids="
         tvScoreTotal,
-        btd1,etd1Input,tvd1Prompt,tvd1ScoreThisDart,tvd1ScoreThisTurn,tvd1ScoreTotal,
-        btd2,etd2Input,tvd2Prompt,tvd2ScoreThisDart,tvd2ScoreThisTurn,tvd2ScoreTotal,
-        btd3,etd3Input,tvd3Prompt
+        etd1Input,tvd1Prompt,tvd1Score,
+        etd2Input,tvd2Prompt,tvd2Score,
+        etd3Input,tvd3Prompt
         "
 />
     <androidx.constraintlayout.widget.Group
@@ -399,7 +265,7 @@
         android:layout_height="wrap_content"
         android:visibility="invisible"
         app:constraint_referenced_ids="
-        btd1,etd1Input,tvd1Prompt,tvd1ScoreThisDart,tvd1ScoreThisTurn,tvd1ScoreTotal
+        etd1Input,tvd1Prompt,tvd1Score
         "
         />
 
@@ -409,7 +275,7 @@
         android:layout_height="wrap_content"
         android:visibility="invisible"
         app:constraint_referenced_ids="
-        btd2,etd2Input,tvd2Prompt,tvd2ScoreThisDart,tvd2ScoreThisTurn,tvd2ScoreTotal
+        etd2Input,tvd2Prompt,tvd2Score
         "
         />
 
@@ -419,18 +285,20 @@
         android:layout_height="wrap_content"
         android:visibility="invisible"
         app:constraint_referenced_ids="
-        btd3,etd3Input,tvd3Prompt
+        etd3Input,tvd3Prompt
         "
         />
 
     <TextView
-        android:id="@+id/tvGameMessage"
+        android:id="@+id/tvWaitingMessage"
         android:layout_width="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_height="50dp"
+        android:layout_height="60dp"
         android:gravity="center"
+        android:textSize="24dp"
+        android:textStyle="bold"
         />
 
     <com.gmp.android.darts42.ThrowKeyboard

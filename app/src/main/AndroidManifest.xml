@@ -15,8 +15,8 @@
         <activity android:name=".ReviewChallenge"></activity>
         <activity android:name=".IssueChallenge" ></activity>
         <activity android:name=".PlayDarts"
-            android:windowSoftInputMode="adjustPan"
-            />
+            android:theme="@style/AppChalkboardTheme"/>
+            <!-- android:windowSoftInputMode="adjustPan" necessary if we use in-built keyboard in PlayDarts-->
         <activity
             android:name=".InitialiseGame"
             android:label="@string/title_activity_initialise_game"
