@@ -476,7 +476,8 @@ public class PlayDarts extends AppCompatActivity {
 
 
             //Clear the bottom section
-            scoreSection.setVisibility(View.INVISIBLE);
+            scoreSection.setVisibility(View.GONE);
+            throwKeyboard.setVisibility(View.GONE);
 
             //Show waiting message regardless of turn
             waitingMessage.setVisibility(View.VISIBLE);
@@ -647,7 +648,7 @@ public class PlayDarts extends AppCompatActivity {
                                 messageText = "Waiting for " + theirNickname + " to throw";
                                 waitingMessage.setText(messageText);
                                 hideKeyboard();
-                                scoreSection.setVisibility(View.INVISIBLE);
+                                scoreSection.setVisibility(View.GONE);
                                 waitingMessage.setVisibility(View.VISIBLE);
                             }
                         }
@@ -689,9 +690,9 @@ public class PlayDarts extends AppCompatActivity {
 
     private void getDart1() {
 
-        waitingMessage.setVisibility(View.INVISIBLE);
+        waitingMessage.setVisibility(View.GONE);
         scoreTotal.setText(Integer.toString(myTotalScore));
-        scoreSection.setVisibility(View.VISIBLE);
+        //scoreSection.setVisibility(View.VISIBLE);
 
         //make sure that the input is clear
         d1Input.getText().clear();
@@ -711,11 +712,16 @@ public class PlayDarts extends AppCompatActivity {
         d1Input.setFocusableInTouchMode(true);
         d1Input.setFocusable(true);
         d1Input.requestFocus();
+
+        /*
         d2Section.setVisibility(View.INVISIBLE);
         d3Section.setVisibility(View.INVISIBLE);
+         */
 
         // Show the keyboard and move the rest of the screen up above it
+        //Make sure that the recycler is still scrolled to the bottome
         showKeyboard();
+        recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
         // Add a listener that is looking for the Send key (char 10) - process throw when detected
         Log.d(TAG,"Setting up textwatcher");;
@@ -748,10 +754,13 @@ public class PlayDarts extends AppCompatActivity {
         d2Input.setFocusableInTouchMode(true);
         d2Input.setFocusable(true);
         d2Input.requestFocus();
-        d3Section.setVisibility(View.INVISIBLE);
 
-        // Add a listener that is looking for the Send key (char 10) - proess throw when detecyed
+        //Make sure that the recycler is still scrolled to the bottome
+        recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
+        //d3Section.setVisibility(View.INVISIBLE);
+
+        // Add a listener that is looking for the Send key (char 10) - process throw when detecyed
         if (!textWatcherRunning) {
             d2Input.addTextChangedListener(dart2Watcher);
             textWatcherRunning = true;
@@ -780,10 +789,10 @@ public class PlayDarts extends AppCompatActivity {
         d3Input.setFocusable(true);
         d3Input.requestFocus();
 
-        // Add a listener that is looking for the Send key (char 10) - proess throw when detecyed
+        //Make sure that the recycler is still scrolled to the bottome
+        recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
         // Add a listener that is looking for the Send key (char 10) - proess throw when detecyed
-
         if (!textWatcherRunning) {
             d3Input.addTextChangedListener(dart3Watcher);
             textWatcherRunning = true;
@@ -896,7 +905,7 @@ public class PlayDarts extends AppCompatActivity {
         //Hide the keyboard and the score section
 
         hideKeyboard();
-        scoreSection.setVisibility(View.INVISIBLE);
+        scoreSection.setVisibility(View.GONE);
 
         waitingMessage.setText(theirNickname + "'s go. Please wait ...");
         waitingMessage.setVisibility(View.VISIBLE);
@@ -1024,7 +1033,7 @@ public class PlayDarts extends AppCompatActivity {
         //Tell the player what's happened
         //TODO: need to consider re-using waitingMessage here
         //TODO: do we still need the gameMessage section at the bottom?
-        scoreSection.setVisibility(View.INVISIBLE);
+        scoreSection.setVisibility(View.GONE);
         waitingMessage.setText(messageText);
         waitingMessage.setVisibility(View.VISIBLE);
 
@@ -1081,22 +1090,29 @@ public class PlayDarts extends AppCompatActivity {
 
         //Make sure that the keyboard is invisible
         throwKeyboard.setVisibility(View.GONE);
+        waitingMessage.setVisibility(View.VISIBLE);
         Log.d(TAG,"Hid the keyboard");
 
+        /*
         //Move the prompts right down to the bottom fo the screen to give more room for the recycler view
         ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) d1Prompt.getLayoutParams();
         params.bottomToTop = waitingMessage.getId();
         d1Prompt.setLayoutParams(params);
+        */
 
     } //Ends hideKeyboard
 
     private void showKeyboard() {
 
         throwKeyboard.setVisibility(View.VISIBLE);
+        waitingMessage.setVisibility(View.GONE);
         Log.d(TAG,"Displayed the keyboard");
+
+        /*
         ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) d1Prompt.getLayoutParams();
         params.bottomToTop = throwKeyboard.getId();
         d1Prompt.setLayoutParams(params);
+         */
 
     } //Ends hideKeyboard
 

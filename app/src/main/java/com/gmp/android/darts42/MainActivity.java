@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("MainActivity", "No user status found");
 
                     mDatabaseReference = mDatabase.getReference().child("player_profiles");
-                    PlayerProfile playerProfile = new PlayerProfile(mUsername,mUserNickname,mEMailAddress,false);
+                    PlayerProfile playerProfile = new PlayerProfile(mUsername,mUserNickname,mEMailAddress.toLowerCase(),false);
                     mDatabaseReference.child(mUid).setValue(playerProfile);
                 }
             }

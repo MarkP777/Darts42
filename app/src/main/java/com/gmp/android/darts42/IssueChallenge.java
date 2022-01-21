@@ -247,13 +247,14 @@ public class IssueChallenge extends AppCompatActivity {
     public void checkOpponent(View view) {
 
         //Cannot challenge yourself
-        if (awayEMail.equals(commonData.getHomeUserEMail())) {
+        if (awayEMail.toLowerCase().equals(commonData.getHomeUserEMail())) {
             opponentNameConfirm.setText("Cannot challenge yourself. Please select another player");
         }
         //Get opponent profile
         else {
             DatabaseReference playerProfilesReference = mScoresDatabase.getReference().child("player_profiles");
-            Query data = playerProfilesReference.orderByChild("playerEMail").equalTo(awayEMail).limitToFirst(1);
+            Log.d(TAG,awayEMail.toLowerCase());
+            Query data = playerProfilesReference.orderByChild("playerEMail").equalTo(awayEMail.toLowerCase()).limitToFirst(1);
             data.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
