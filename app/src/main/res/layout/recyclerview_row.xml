@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:id="@+id/scoreRow"
     android:orientation="horizontal"
-    android:paddingTop="15dp"
+    android:paddingTop="5dp"
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
     android:paddingBottom="0dp">

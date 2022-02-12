@@ -3,6 +3,7 @@ package com.gmp.android.darts42;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.constraintlayout.widget.Group;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -305,6 +306,10 @@ public class IssueChallenge extends AppCompatActivity {
 
     public void sendChallenge(View view) {
 
+        //Method called when the Send Challenge button is pressed
+
+        //Disable the send challenge button to stop it being hit agaiin
+        sendChallengeButton.setEnabled(false);
 
         //Construct match details
         matchToPlay = new Match(

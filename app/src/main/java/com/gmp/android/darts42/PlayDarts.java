@@ -708,6 +708,7 @@ public class PlayDarts extends AppCompatActivity {
         d1Score.setText("");
 
         //setDartInputFilters(d1Input,d1Send);
+        scoreSection.setVisibility(View.INVISIBLE);
         d1Section.setVisibility(View.VISIBLE);
         d1Input.setFocusableInTouchMode(true);
         d1Input.setFocusable(true);
@@ -719,7 +720,7 @@ public class PlayDarts extends AppCompatActivity {
          */
 
         // Show the keyboard and move the rest of the screen up above it
-        //Make sure that the recycler is still scrolled to the bottome
+        //Make sure that the recycler is still scrolled to the bottom
         showKeyboard();
         recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
@@ -755,9 +756,6 @@ public class PlayDarts extends AppCompatActivity {
         d2Input.setFocusable(true);
         d2Input.requestFocus();
 
-        //Make sure that the recycler is still scrolled to the bottome
-        recyclerView.scrollToPosition(adapter.getItemCount() - 1);
-
         //d3Section.setVisibility(View.INVISIBLE);
 
         // Add a listener that is looking for the Send key (char 10) - process throw when detecyed
@@ -788,9 +786,6 @@ public class PlayDarts extends AppCompatActivity {
         d3Input.setFocusableInTouchMode(true);
         d3Input.setFocusable(true);
         d3Input.requestFocus();
-
-        //Make sure that the recycler is still scrolled to the bottome
-        recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
         // Add a listener that is looking for the Send key (char 10) - proess throw when detecyed
         if (!textWatcherRunning) {

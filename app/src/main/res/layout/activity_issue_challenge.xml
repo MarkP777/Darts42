@@ -44,6 +44,7 @@
         android:layout_marginRight="20dp"
         android:onClick="checkOpponent"
         android:text="Check"
+        android:enabled="false"
         app:layout_constraintBaseline_toBaselineOf="@id/tvOpponentEmailPrompt"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -69,6 +70,7 @@
         android:id="@+id/spStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="14dp"
         app:layout_constraintBaseline_toBaselineOf="@id/tvStartPrompt"
         app:layout_constraintLeft_toLeftOf="@id/spMaxSets" />
 
@@ -117,9 +119,7 @@
         android:checked="false"
         android:text="Doubles: to start"
         app:layout_constraintLeft_toLeftOf="@id/tvNumberOfSetsPrompt"
-        app:layout_constraintTop_toBottomOf="@id/tvNumberOfSetsPrompt"
-
-        />
+        app:layout_constraintTop_toBottomOf="@id/tvNumberOfSetsPrompt" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/swDoubleToFinishPrompt"
@@ -157,6 +157,5 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_begin="-87dp" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

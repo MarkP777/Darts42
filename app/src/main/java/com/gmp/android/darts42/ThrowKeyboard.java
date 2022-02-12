@@ -16,6 +16,11 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class ThrowKeyboard extends ConstraintLayout implements View.OnClickListener {
 
+    /*
+    Custom keyboard based on
+    https://stackoverflow.com/questions/9577304/how-can-you-make-a-custom-keyboard-in-android/45005691#45005691
+     */
+
     // constructors
     public ThrowKeyboard(Context context) {
         this(context, null, 0);
@@ -160,10 +165,12 @@ public class ThrowKeyboard extends ConstraintLayout implements View.OnClickListe
         if (editedString.matches(scorePattern) && editedString.length() > 0)
         {
             mButtonEnter.setEnabled(true);
+            mButtonEnter.setAlpha(1.0f);
         }
         else
         {
             mButtonEnter.setEnabled(false);
+            mButtonEnter.setAlpha(0.5f);
         }
 
     }

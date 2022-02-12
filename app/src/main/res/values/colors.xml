@@ -10,4 +10,8 @@
     <color name="yellow_background">#fff59d</color>
     <color name="dartsboard_green">#1b5e20</color>
     <color name="dartsboard_red">#DE0112</color>
+    <color name="customKeyboardBackground">#FFA2A2A2</color>
+    <!--
+    <color name="customKeyboardBackground">#ff888888</color>
+    -->
 </resources>
