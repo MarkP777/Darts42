@@ -1032,7 +1032,7 @@ public class PlayDarts extends AppCompatActivity {
         waitingMessage.setText(messageText);
         waitingMessage.setVisibility(View.VISIBLE);
 
-        messageCountDownTimer = new CountDownTimer(10000,1000) {
+        messageCountDownTimer = new CountDownTimer(Parameters.gameMessageTimeout,1000) {
             @Override
             public void onTick(long millisUntilFinished) {
 
@@ -1042,7 +1042,7 @@ public class PlayDarts extends AppCompatActivity {
             public void onFinish() {
 
                 //The loser clears down the score records and if the match is still in progress writes a new seed record
-                if (winner != myUId) {
+                if (!winner.equals(myUId)) {
                     scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
                     scoresDataBaseReference.removeValue();
                     if (!matchOver) {

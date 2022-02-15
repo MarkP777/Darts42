@@ -45,9 +45,6 @@ public class IssueChallenge extends AppCompatActivity {
     private Button checkOpponentButton;
     private EditText mMessageEditText;
 
-    private final Integer challengeTimeout = 18000 * 1000;
-    private final Integer challengeTimeoutMargin = 30 * 1000;
-
     public FirebaseDatabase mScoresDatabase;
     private DatabaseReference mScoresDatabaseReference;
     private ChildEventListener mChildEventListener;
@@ -399,7 +396,7 @@ public class IssueChallenge extends AppCompatActivity {
     private void setCountDownTimer() {
         challengeCountdown = (TextView)findViewById(R.id.tvChallengeCountdown);
         //challengeCountdown.setVisibility(View.VISIBLE);
-        mcountDownTimer = new CountDownTimer(challengeTimeout+challengeTimeoutMargin, 1000) {
+        mcountDownTimer = new CountDownTimer(Parameters.challengeTimeout+Parameters.challengeTimeoutMargin, 1000) {
 
             @Override
             public void onTick(long millisUntilFinished) {
@@ -476,7 +473,7 @@ public class IssueChallenge extends AppCompatActivity {
 
 
     private void setMessageCountdownTimer() {
-        messageCountdownTimer = new CountDownTimer(10000, 1000) {
+        messageCountdownTimer = new CountDownTimer(Parameters.gameMessageTimeout, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
 

@@ -49,7 +49,6 @@ public class ReviewChallenge extends AppCompatActivity {
 
     private TextView reviewCountdown;
     private Calendar timeNowCalendar;
-    private final Long challengeTimeout = (long) 18000 * 1000; //Challenge timeout in milliseconds
 
     private Button acceptChallengeButton;
     private Button declineChallengeButton;
@@ -225,7 +224,7 @@ public class ReviewChallenge extends AppCompatActivity {
 
         //toss to see who throws first
 
-        if (Math.random() <= 0.5) lastThrower = mUid;
+        if (Math.random() < 0.5) lastThrower = mUid;
         else lastThrower = challengerID;
 
         //write a seed record to the scores table
@@ -268,7 +267,7 @@ public class ReviewChallenge extends AppCompatActivity {
         reviewCountdown = (TextView)findViewById(R.id.tvReviewCountdown);
         //challengeCountdown.setVisibility(View.VISIBLE);
         timeNowCalendar = Calendar.getInstance();
-        reviewCountdownTimer = new CountDownTimer(timestamp+challengeTimeout-timeNowCalendar.getTimeInMillis(), 1000) {
+        reviewCountdownTimer = new CountDownTimer(timestamp+Parameters.challengeTimeout-timeNowCalendar.getTimeInMillis(), 1000) {
 
             @Override
             public void onTick(long millisUntilFinished) {
@@ -312,7 +311,7 @@ public class ReviewChallenge extends AppCompatActivity {
     }
 
     private void setMessageCountdownTimer() {
-        messageCountdownTimer = new CountDownTimer(10000, 1000) {
+        messageCountdownTimer = new CountDownTimer(Parameters.gameMessageTimeout, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
 

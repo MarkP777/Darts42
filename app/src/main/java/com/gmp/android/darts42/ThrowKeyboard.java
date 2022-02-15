@@ -164,13 +164,13 @@ public class ThrowKeyboard extends ConstraintLayout implements View.OnClickListe
 
         if (editedString.matches(scorePattern) && editedString.length() > 0)
         {
-            mButtonEnter.setEnabled(true);
             mButtonEnter.setAlpha(1.0f);
-        }
+            mButtonEnter.setEnabled(true);
+         }
         else
         {
-            mButtonEnter.setEnabled(false);
             mButtonEnter.setAlpha(0.5f);
+            mButtonEnter.setEnabled(false);
         }
 
     }

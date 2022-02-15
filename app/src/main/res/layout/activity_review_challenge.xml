@@ -54,7 +54,8 @@
          app:layout_constraintRight_toLeftOf="@id/btAccept"
          app:layout_constraintLeft_toLeftOf="parent"
         android:onClick="challengeDeclined"
-        android:text="Decline"
+         android:backgroundTint="@color/dartsboard_red"
+         android:text="Decline"
          android:layout_marginTop="30dp"
          />
 
@@ -63,6 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="challengeAccepted"
+        android:backgroundTint="@color/dartsboard_green"
         android:text="Accept"
         app:layout_constraintLeft_toRightOf="@id/btDecline"
         app:layout_constraintBottom_toBottomOf="@id/btDecline"
