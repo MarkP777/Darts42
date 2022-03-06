@@ -8,6 +8,7 @@ public class Parameters {
 
     public static final long challengeTimeoutMargin = 15 * 1000; //Safety margin so that challenger does not timeout early (millisecs)
 
+    public static final String dummyEmail = "darts42demo@darts42demo.zzz"; //use this as an opponent to switch into demo mode
 }
 
 
