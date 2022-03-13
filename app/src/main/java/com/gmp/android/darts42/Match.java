@@ -13,10 +13,10 @@ public class Match {
     private Boolean endWithDouble;
     private List<Integer> setScores;
     private List<Integer> legScores;
+    private Integer numberOfScoreRecords;
 
 
     public Match() {
-
     }
 
     public Match(
@@ -28,7 +28,8 @@ public class Match {
             Boolean startWithDouble,
             Boolean endWithDouble,
             List<Integer> setScores,
-            List<Integer> legScores) {
+            List<Integer> legScores,
+            Integer numberOfScoreRecords) {
 
         this.player0Id = player0Id;
         this.player1Id = player1Id;
@@ -39,6 +40,7 @@ public class Match {
         this.endWithDouble = endWithDouble;
         this.legScores = legScores;
         this.setScores = setScores;
+        this.numberOfScoreRecords = numberOfScoreRecords;
     }
 
     public String getPlayer0Id() {
@@ -77,6 +79,8 @@ public class Match {
         return legScores;
     }
 
+    public Integer getNumberOfScoreRecords() { return numberOfScoreRecords; }
+
     public void setPlayer0Id(String player0Id) {
         this.player1Id = player0Id;
     }
@@ -112,6 +116,10 @@ public class Match {
     public void setLegScores(List<Integer> legScores) {
         this.legScores = legScores;
     }
+
+    public void setNumberOfScoreRecords(Integer numberOfScoreRecords) { this.numberOfScoreRecords = numberOfScoreRecords; }
+
+    public void incrementNumberOfScoreRecords() { numberOfScoreRecords++; }
 }
 
 

@@ -96,6 +96,8 @@ public class IssueChallenge extends AppCompatActivity {
 
     String founduserid = null;
 
+    private Boolean demoMode = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -221,12 +223,16 @@ public class IssueChallenge extends AppCompatActivity {
 
     }
 
-    private void writeNewChallenge (String founduserid, Match newMatchDetails) {
-        // Create new post at /user-posts/$userid/$postid and at
-        // /posts/$postid simultaneously
+    private void writeNewMatchRecord(Match newMatchDetails) {
+
+        //writes out a new match record
         mScoresDatabaseReference = mScoresDatabase.getReference("matches");
         newMatchKey = mScoresDatabaseReference.push().getKey();
         mScoresDatabaseReference.child(newMatchKey).setValue(newMatchDetails);
+
+    }
+
+    private void writeNewChallenge (String founduserid, String newMatchKey) {
 
         mScoresDatabaseReference = mScoresDatabase.getReference("player_messages/" + founduserid + "/");
         //Write out the player message
@@ -272,6 +278,14 @@ public class IssueChallenge extends AppCompatActivity {
                                 //Opponent is not busy
                                 opponentNameConfirm.setText(awayProfile.getPlayerName());
 
+                                //Set the demo mode flag if the opponent is the demo user
+                                if (awayEMail.trim().toLowerCase().equals(Parameters.dummyEmail)) {
+                                    demoMode = true;
+                                }
+                                else {
+                                    demoMode = false;
+                                }
+
                                 //Disable any changes to the opponent ...
                                 emailValidate.setEnabled(false);
                                 checkOpponentButton.setEnabled(false);
@@ -305,7 +319,7 @@ public class IssueChallenge extends AppCompatActivity {
 
         //Method called when the Send Challenge button is pressed
 
-        //Disable the send challenge button to stop it being hit agaiin
+        //Disable the send challenge button to stop it being hit again
         sendChallengeButton.setEnabled(false);
 
         //Construct match details
@@ -318,15 +332,26 @@ public class IssueChallenge extends AppCompatActivity {
                 doubleToStartSwitch.isChecked(),
                 doubleToFinishSwitch.isChecked(),
                 new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0})),
-                new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0}))
+                new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0})),
+                0
                 );
 
-        //Set challenger's status to busy
-        mScoresDatabaseReference = mScoresDatabase.getReference("player_profiles");
-        mScoresDatabaseReference.child(mUid).child("playerEngaged").setValue(true);
+        // Create the match record
+        writeNewMatchRecord(matchToPlay);
 
-        //Issue the challenge
-        writeNewChallenge(founduserid,matchToPlay);
+        //If we're demo mode set up the game as if the challenge has been sent and accepted by the opponent
+        // otherwise set the challenger's status to busy and write out the challenge to the opponent
+        if (demoMode) {
+            setUpDemoGame();
+        }
+        else {
+            //Set challenger's status to busy
+            mScoresDatabaseReference = mScoresDatabase.getReference("player_profiles");
+            mScoresDatabaseReference.child(mUid).child("playerEngaged").setValue(true);
+
+            //send challenge to opponent
+            writeNewChallenge(founduserid,newMatchKey);
+        }
 
         //Look for response in player messages. If nothing received in 3 minutes then assume that
         //opponent is not around
@@ -511,6 +536,51 @@ public class IssueChallenge extends AppCompatActivity {
         });
 
     }
+
+    private void setUpDemoGame() {
+
+            String lastThrower;
+            DatabaseReference playerMessageDatabaseReference;
+            DatabaseReference playerProfileReference;
+            PlayerMessage playerMessage;
+
+            //toss to see who throws first
+
+            if (Math.random() <= 0.5) lastThrower = founduserid;
+            else lastThrower = mUid;
+
+            //write a seed record to the scores table
+            DatabaseReference scoreDatabaseReference = mScoresDatabase.getReference("scores").child(newMatchKey);
+            Score seedScore = new Score(
+                    lastThrower,
+                    "",
+                    -1,
+                    new ArrayList<Integer>(Arrays.asList(new Integer[]{matchToPlay.getStartingPoints(), matchToPlay.getStartingPoints()})),
+                    new ArrayList<Boolean>(Arrays.asList(new Boolean[]{!matchToPlay.getStartWithDouble(),!matchToPlay.getStartWithDouble()})),
+                    new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0})),
+                    new ArrayList<Integer>(Arrays.asList(new Integer[]{0,0})),
+                    false
+            );
+            scoreDatabaseReference.push().setValue(seedScore);
+
+            matchToPlay.incrementNumberOfScoreRecords();
+            scoreDatabaseReference = mScoresDatabase.getReference("matches");
+            scoreDatabaseReference.child(newMatchKey).child("numberOfScoreRecords").setValue(matchToPlay.getNumberOfScoreRecords());
+
+
+            //write game in progress messages to to oneself as if it has come from the demo user
+
+            playerMessage = new PlayerMessage(102,newMatchKey,mUid,(long) 0);
+
+            playerMessage.setSender(founduserid);
+            playerMessageDatabaseReference = mScoresDatabase.getReference("player_messages").child(mUid);
+            playerMessageDatabaseReference.push().setValue(playerMessage);
+
+            //set own status to engaged
+            playerProfileReference = mScoresDatabase.getReference("player_profiles");
+            playerProfileReference.child(mUid).child("playerEngaged").setValue(true);
+        }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -51,6 +53,7 @@ public class PlayDarts extends AppCompatActivity {
     String theirNickname;
 
     Integer myTotalScore;
+    Integer dummyTotalScore;
     Integer theirTotalScore;
     Boolean iHaveStarted;
     Boolean theyHaveStarted;
@@ -71,6 +74,7 @@ public class PlayDarts extends AppCompatActivity {
 
     FirebaseDatabase fbDatabase;
     DatabaseReference scoresDataBaseReference;
+    DatabaseReference matchDatabaseReference;
     ChildEventListener scoresChildEventListener;
 
     RecyclerView recyclerView;
@@ -102,6 +106,11 @@ public class PlayDarts extends AppCompatActivity {
     EditText d1Input;
     EditText d2Input;
     EditText d3Input;
+
+    Boolean demoMode;
+    Boolean dummyDelayHandlerRunning = false;
+
+    Integer numberOfScoreRecordsRead = 0;
 
     protected TextWatcher dart1Watcher = new TextWatcher() {
 
@@ -319,11 +328,9 @@ public class PlayDarts extends AppCompatActivity {
 
     private void getMatchDetails() {
 
-        DatabaseReference fbMatchDatabaseReference;
-
         //Read the match record
-        fbMatchDatabaseReference = fbDatabase.getReference("matches");
-        Query matchData = fbMatchDatabaseReference.orderByKey().equalTo(matchID).limitToFirst(1);
+        matchDatabaseReference = fbDatabase.getReference("matches");
+        Query matchData = matchDatabaseReference.orderByKey().equalTo(matchID).limitToFirst(1);
         matchData.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -395,6 +402,14 @@ public class PlayDarts extends AppCompatActivity {
                         Log.d(TAG, "Opponent profile found");
 
                         theirNickname = theirProfile.getPlayerNickName();
+
+                        //Look at the opponent's email. If it matches the preset demo email, go into demo mode
+                        if (theirProfile.getPlayerEMail().trim().toLowerCase().equals(Parameters.dummyEmail)) {
+                            demoMode = true;
+                        }
+                        else {
+                            demoMode = false;
+                        }
 
                         //play the game
                         playGame();
@@ -481,7 +496,7 @@ public class PlayDarts extends AppCompatActivity {
 
             //Show waiting message regardless of turn
             waitingMessage.setVisibility(View.VISIBLE);
-            waitingMessage.setText("setting up match. Please wait ...");
+            waitingMessage.setText("Setting up match. Please wait ...");
 
 
             // set up the RecyclerView
@@ -526,7 +541,8 @@ public class PlayDarts extends AppCompatActivity {
                         //Cancel the message countdowntimer if it's running
                         if (messageCountDownTimer != null) messageCountDownTimer.cancel();
 
-                        //Unwrap the message
+                        //Increment the number of records read and unwrap the message
+                        numberOfScoreRecordsRead ++;
                         Score scoreRecord = dataSnapshot.getValue(Score.class);
 
                         Log.d(TAG, "Score record from "
@@ -554,6 +570,9 @@ public class PlayDarts extends AppCompatActivity {
                         setScores = scoreRecord.getSetScores();
                         legScores = scoreRecord.getLegScores();
                         legFinished = scoreRecord.getLegFinished();
+
+                        //Also pick up the opponent's total score. We use it if in demo mode
+                        dummyTotalScore = totalScore.get(theirScoreIndex);
 
                         //write out sets and legs
                         lSets.setText(String.format("%1$d",setScores.get(myScoreIndex)));
@@ -641,15 +660,22 @@ public class PlayDarts extends AppCompatActivity {
                         }
                         else { //Leg still in progress
 
-                            //Get next input
-                            if (myGoNext) { //My go, so get input
-                                getDart1();
-                            } else { //Their go, so I'm told to wait
-                                messageText = "Waiting for " + theirNickname + " to throw";
-                                waitingMessage.setText(messageText);
-                                hideKeyboard();
-                                scoreSection.setVisibility(View.GONE);
-                                waitingMessage.setVisibility(View.VISIBLE);
+                            //Get next input provided we're not just catching up reading score records
+                            if (numberOfScoreRecordsRead.equals(matchDetails.getNumberOfScoreRecords())) {
+                                if (myGoNext) { //My go, so get input
+                                    getDart1();
+                                } else { //Their go, so I'm told to wait
+                                    messageText = "Waiting for " + theirNickname + " to throw";
+                                    waitingMessage.setText(messageText);
+                                    hideKeyboard();
+                                    scoreSection.setVisibility(View.GONE);
+                                    waitingMessage.setVisibility(View.VISIBLE);
+
+                                    //And if we're in demo mode, then simulate the opponent's go
+                                    if (demoMode) {
+                                        dummyGo();
+                                    }
+                                }
                             }
                         }
 
@@ -932,13 +958,15 @@ public class PlayDarts extends AppCompatActivity {
         scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
         scoresDataBaseReference.push().setValue(score);
 
+        //Update the number of score records in the match record
+        matchDetails.incrementNumberOfScoreRecords();
+        matchDatabaseReference.child(matchID).child("numberOfScoreRecords").setValue(matchDetails.getNumberOfScoreRecords());
+
         //Write out the match record if the leg was won
         //TODO: Consider using updateChildren here and elsewhere when doing multiple connected updates
         if (wonLegThisThrow) {
-            scoresDataBaseReference = fbDatabase.getReference("matches").child(matchID).child("setScores");
-            scoresDataBaseReference.setValue(setScores);
-            scoresDataBaseReference = fbDatabase.getReference("matches").child(matchID).child("legScores");
-            scoresDataBaseReference.setValue(legScores);
+            matchDatabaseReference.child(matchID).child("setScores").setValue(setScores);
+            matchDatabaseReference.child(matchID).child("legScores").setValue(legScores);
         }
 
     }
@@ -1041,10 +1069,11 @@ public class PlayDarts extends AppCompatActivity {
             @Override
             public void onFinish() {
 
-                //The loser clears down the score records and if the match is still in progress writes a new seed record
-                if (!winner.equals(myUId)) {
+                //The loser (or the only player if in demo mode) clears down the score records and if the match is still in progress writes a new seed record
+                if (!winner.equals(myUId) || demoMode) {
                     scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
                     scoresDataBaseReference.removeValue();
+                    matchDetails.setNumberOfScoreRecords(0);
                     if (!matchOver) {
                         score.setThrower(winner); //Winner's id so that the loser starts next leg
                         score.setThrowString("");
@@ -1055,9 +1084,15 @@ public class PlayDarts extends AppCompatActivity {
                         score.setSetScores(setScores);
                         score.setLegFinished(false);
                         scoresDataBaseReference.push().setValue(score);
+                        matchDetails.incrementNumberOfScoreRecords();
                     }
-
+                    //Update the number of score records in the match record
+                    matchDetails.incrementNumberOfScoreRecords();
+                    matchDatabaseReference.child(matchID).child("numberOfScoreRecords").setValue(matchDetails.getNumberOfScoreRecords());
                 }
+                //Both players reset the number of score records they've read
+                numberOfScoreRecordsRead = 0;
+
                 /*
                 If the match is over both players delete their Match in Progress message records
                 //and set their profiles to Not Engaged
@@ -1080,6 +1115,123 @@ public class PlayDarts extends AppCompatActivity {
         messageCountDownTimer.start();
 
     } //Ends completeThisLeg()
+
+    private void dummyGo() {
+
+        //Wait a few seconds so that it appears that the user is waiting for the opponent to throw
+        //Make sure that we don't get multiple handlers running
+        if (!dummyDelayHandlerRunning) {
+            dummyDelayHandlerRunning = true;
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    dummy3Throws();
+                }
+            }, Parameters.dummyGoWaitTime);
+        }
+
+ /*
+        try {
+            Thread.sleep(Parameters.dummyGoWaitTime);
+        }
+        catch(InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
+        }
+*/
+
+    } //ends dummyGo()
+
+        private void dummy3Throws () {
+
+        /*
+        Simulates the other player having a go:
+        - "Throws" three darts
+        - Doesn't respect needing a double to start
+        - Never throws a winning dart
+         */
+
+            int dummyDartsThrown = 0;
+
+            Log.d(TAG,"Entering dummy3Throws");
+
+            dummyDelayHandlerRunning = false;
+            throwString = "";
+            scoreThisTurn = 0;
+
+            //Get 3 darts
+            while (dummyDartsThrown < 3) {
+
+                dart.analyse(dummyDart());
+
+                //We don't want dummy to ever win, so modify the score if it looks a possibility
+                if ((dummyTotalScore-dart.score)<2){
+                    dart.analyse("m");
+                }
+
+                if (dummyDartsThrown == 0) {
+                    throwString = dart.string;
+                }
+                else {
+                    throwString = throwString + ":" + dart.string;
+                }
+                scoreThisTurn = scoreThisTurn + dart.score;
+                dummyTotalScore = dummyTotalScore - dart.score;
+                dummyDartsThrown ++;
+            }
+
+            //write out the score record - which will then force the flip to the player's turn
+            score.setThrower(theirID);
+            score.setThrowString(throwString);
+            score.setThrowScore(scoreThisTurn);
+            totalScore.set(theirScoreIndex,dummyTotalScore);
+            score.setTotalScore(totalScore);
+            hasStarted.set(theirScoreIndex,true);
+            score.setHasStarted(hasStarted);
+            score.setLegScores(legScores);
+            score.setSetScores(setScores);
+            score.setLegFinished(false);
+
+            scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
+            scoresDataBaseReference.push().setValue(score);
+
+            Log.d(TAG,"Exiting dummy3Throws");
+
+        } //ends dummy3Throws
+
+
+        private String dummyDart() {
+
+        /*
+        Constructs a string as if a user has entered a dart result from the keyboard
+         */
+
+        String dartString;
+        Double randomNumber;
+
+        //Work out if the dart is straight, miss, double or treble
+        randomNumber = Math.random();
+        if (randomNumber < 0.5) { //0.0 to 0.5: straight
+            dartString = "";
+        }
+        else if (randomNumber < 0.7 ){ //0.0 to 0.7 miss
+            dartString = "m";
+        }
+        else if (randomNumber < 0.85) { //0.7 to 0.85 double
+            dartString = "d";
+        }
+        else {  //0.85 to 1.0 treble
+            dartString = "t";
+        }
+
+        //If it wasn't a miss, add a number between 1 and 5
+        if (!dartString.equals("m")) {
+            dartString = dartString + String.format("%.0f", Math.floor((Math.random() * 5) + 1));
+        }
+
+        return dartString;
+
+        } //ends dummyDart
 
     private void hideKeyboard() {
 

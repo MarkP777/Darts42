@@ -224,7 +224,7 @@ public class ReviewChallenge extends AppCompatActivity {
 
         //toss to see who throws first
 
-        if (Math.random() < 0.5) lastThrower = mUid;
+        if (Math.random() <= 0.5) lastThrower = mUid;
         else lastThrower = challengerID;
 
         //write a seed record to the scores table
@@ -240,6 +240,10 @@ public class ReviewChallenge extends AppCompatActivity {
                 false
                 );
         scoreDatabaseReference.push().setValue(seedScore);
+
+        //Increment the number of score records in the match record
+        matchDetails.incrementNumberOfScoreRecords();
+        matchReference.child(matchID).child("numberOfScoreRecords").setValue(matchDetails.getNumberOfScoreRecords());
 
         //write game in progress messages to the challenger and oneself
 
