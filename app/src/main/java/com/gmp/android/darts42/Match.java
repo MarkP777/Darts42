@@ -41,6 +41,14 @@ public class Match {
         this.legScores = legScores;
         this.setScores = setScores;
         this.numberOfScoreRecords = numberOfScoreRecords;
+          /*
+    The number of associated score records is used to aid restart in the event of an interrupted game.
+    In this case, "old" score records are read without asking for user input after each one.
+    In interactive games with two players, asking ofr user input did not matter; the listener reading
+    the next record interrupted before the user saw the prompts. In demo mode, it was difficult avoiding the
+    code for dummy's turn to execute
+     */
+
     }
 
     public String getPlayer0Id() {

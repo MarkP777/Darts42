@@ -15,7 +15,7 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
+// import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -59,16 +59,16 @@ public class PlayDarts extends AppCompatActivity {
     Boolean theyHaveStarted;
 
     Integer scoreThisTurn;
-    Integer scoreThisDart;
-    Boolean bustThisThrow;
-    Boolean wonLegThisThrow;
-    Boolean legFinished;
-
     Boolean scoresNewLineAdded;
     Boolean scoresLeftColumnFilled;
     Integer scoreLastPosition;
 
     Integer tempAdapterLength;
+
+    Integer scoreThisDart;
+    Boolean bustThisThrow;
+    Boolean wonLegThisThrow;
+    Boolean legFinished;
 
 
 
@@ -124,11 +124,11 @@ public class PlayDarts extends AppCompatActivity {
                 lastCharacter = (int) s.charAt(s.length() - 1);
 
                 if (lastCharacter == 10) {
-                    Log.d(TAG, s.toString() + " entered ");
+                    // Log.d(TAG, s.toString() + " entered ");
                     dart1Thrown();
 
                 } else {
-                    Log.d(TAG, s.toString() + " not entered yet ");
+                    // Log.d(TAG, s.toString() + " not entered yet ");
                 }
             }
         }
@@ -153,11 +153,11 @@ public class PlayDarts extends AppCompatActivity {
                 lastCharacter = (int) s.charAt(s.length() - 1);
 
                 if (lastCharacter == 10) {
-                    Log.d(TAG, s.toString() + " entered ");
+                    // Log.d(TAG, s.toString() + " entered ");
                     dart2Thrown();
 
                 } else {
-                    Log.d(TAG, s.toString() + " not entered yet ");
+                    // Log.d(TAG, s.toString() + " not entered yet ");
                 }
             }
         }
@@ -182,11 +182,11 @@ public class PlayDarts extends AppCompatActivity {
                 lastCharacter = (int) s.charAt(s.length() - 1);
 
                 if (lastCharacter == 10) {
-                    Log.d(TAG, s.toString() + " entered ");
+                    // Log.d(TAG, s.toString() + " entered ");
                     dart3Thrown();
 
                 } else {
-                    Log.d(TAG, s.toString() + " not entered yet ");
+                    // Log.d(TAG, s.toString() + " not entered yet ");
                 }
             }
         }
@@ -305,7 +305,7 @@ public class PlayDarts extends AppCompatActivity {
                     // Get the opponent's details
                     for (DataSnapshot childSnapshot : snapshot.getChildren()) {
                         type102Message = childSnapshot.getValue(PlayerMessage.class);
-                        Log.d(TAG, "Match message found " + childSnapshot.getKey());
+                        // Log.d(TAG, "Match message found " + childSnapshot.getKey());
                         matchID = type102Message.getPayload();
                         theirID = type102Message.getSender();
 
@@ -314,7 +314,7 @@ public class PlayDarts extends AppCompatActivity {
                     }
                 } else {
                     // Couldn't find the match message - do nothing
-                    Log.d(TAG, "102 message not found");
+                    // Log.d(TAG, "102 message not found");
                 }
             }
 
@@ -340,7 +340,7 @@ public class PlayDarts extends AppCompatActivity {
                     for (DataSnapshot matchChildSnapshot : snapshot.getChildren()) {
 
                         matchDetails = matchChildSnapshot.getValue(Match.class);
-                        Log.d(TAG, "Match data found");
+                        // Log.d(TAG, "Match data found");
 
                         //TODO: unwrap the match record
                         if (matchDetails.getPlayer1Id().equals(myUId)) {
@@ -399,7 +399,7 @@ public class PlayDarts extends AppCompatActivity {
                     for (DataSnapshot profileChildSnapshot : snapshot.getChildren()) {
 
                         theirProfile = profileChildSnapshot.getValue(PlayerProfile.class);
-                        Log.d(TAG, "Opponent profile found");
+                        // Log.d(TAG, "Opponent profile found");
 
                         theirNickname = theirProfile.getPlayerNickName();
 
@@ -545,12 +545,14 @@ public class PlayDarts extends AppCompatActivity {
                         numberOfScoreRecordsRead ++;
                         Score scoreRecord = dataSnapshot.getValue(Score.class);
 
+                        /*
                         Log.d(TAG, "Score record from "
                                 + scoreRecord.getThrower()
                                 + " with string "
                                 + scoreRecord.getThrowString()
                                 + " and throw score "
                                 + String.format("%1$d", scoreRecord.getThrowScore()));
+                         */
 
                         //Not sure why I thought I needed to delete the message here
                         //scoresDataBaseReference.child(dataSnapshot.getKey()).removeValue();
@@ -661,7 +663,9 @@ public class PlayDarts extends AppCompatActivity {
                         else { //Leg still in progress
 
                             //Get next input provided we're not just catching up reading score records
-                            if (numberOfScoreRecordsRead.equals(matchDetails.getNumberOfScoreRecords())) {
+                            //Note that the number of score records in the match object is not accurate
+                            //once we've caught up - we're not re-reading the match record updated by the opponent
+                            if (numberOfScoreRecordsRead >= matchDetails.getNumberOfScoreRecords()) {
                                 if (myGoNext) { //My go, so get input
                                     getDart1();
                                 } else { //Their go, so I'm told to wait
@@ -751,7 +755,7 @@ public class PlayDarts extends AppCompatActivity {
         recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
         // Add a listener that is looking for the Send key (char 10) - process throw when detected
-        Log.d(TAG,"Setting up textwatcher");;
+        // Log.d(TAG,"Setting up textwatcher");
         if (!textWatcherRunning) {
             d1Input.addTextChangedListener(dart1Watcher);
             textWatcherRunning = true;
@@ -1069,11 +1073,15 @@ public class PlayDarts extends AppCompatActivity {
             @Override
             public void onFinish() {
 
+                //Both players reset the number of score records they've read and then reset the match object
+                numberOfScoreRecordsRead = 0;
+                if (matchOver) { matchDetails.setNumberOfScoreRecords(0); }
+                else { matchDetails.setNumberOfScoreRecords(1); }
+
                 //The loser (or the only player if in demo mode) clears down the score records and if the match is still in progress writes a new seed record
                 if (!winner.equals(myUId) || demoMode) {
                     scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
                     scoresDataBaseReference.removeValue();
-                    matchDetails.setNumberOfScoreRecords(0);
                     if (!matchOver) {
                         score.setThrower(winner); //Winner's id so that the loser starts next leg
                         score.setThrowString("");
@@ -1084,16 +1092,11 @@ public class PlayDarts extends AppCompatActivity {
                         score.setSetScores(setScores);
                         score.setLegFinished(false);
                         scoresDataBaseReference.push().setValue(score);
-                        matchDetails.incrementNumberOfScoreRecords();
                     }
                     //Update the number of score records in the match record
-                    matchDetails.incrementNumberOfScoreRecords();
                     matchDatabaseReference.child(matchID).child("numberOfScoreRecords").setValue(matchDetails.getNumberOfScoreRecords());
                 }
-                //Both players reset the number of score records they've read
-                numberOfScoreRecordsRead = 0;
-
-                /*
+                 /*
                 If the match is over both players delete their Match in Progress message records
                 //and set their profiles to Not Engaged
                  */
@@ -1153,7 +1156,7 @@ public class PlayDarts extends AppCompatActivity {
 
             int dummyDartsThrown = 0;
 
-            Log.d(TAG,"Entering dummy3Throws");
+            // Log.d(TAG,"Entering dummy3Throws");
 
             dummyDelayHandlerRunning = false;
             throwString = "";
@@ -1195,7 +1198,11 @@ public class PlayDarts extends AppCompatActivity {
             scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
             scoresDataBaseReference.push().setValue(score);
 
-            Log.d(TAG,"Exiting dummy3Throws");
+            //Update the number of score records in the match record
+            matchDetails.incrementNumberOfScoreRecords();
+            matchDatabaseReference.child(matchID).child("numberOfScoreRecords").setValue(matchDetails.getNumberOfScoreRecords());
+
+            // Log.d(TAG,"Exiting dummy3Throws");
 
         } //ends dummy3Throws
 
@@ -1238,7 +1245,7 @@ public class PlayDarts extends AppCompatActivity {
         //Make sure that the keyboard is invisible
         throwKeyboard.setVisibility(View.GONE);
         waitingMessage.setVisibility(View.VISIBLE);
-        Log.d(TAG,"Hid the keyboard");
+        // Log.d(TAG,"Hid the keyboard");
 
         /*
         //Move the prompts right down to the bottom fo the screen to give more room for the recycler view
@@ -1253,7 +1260,7 @@ public class PlayDarts extends AppCompatActivity {
 
         throwKeyboard.setVisibility(View.VISIBLE);
         waitingMessage.setVisibility(View.GONE);
-        Log.d(TAG,"Displayed the keyboard");
+        // Log.d(TAG,"Displayed the keyboard");
 
         /*
         ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) d1Prompt.getLayoutParams();

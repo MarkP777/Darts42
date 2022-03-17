@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
+// import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -110,7 +110,7 @@ public class ReviewChallenge extends AppCompatActivity {
                 for (DataSnapshot profileChildSnapshot : snapshot.getChildren()) {
 
                     challengerProfile = profileChildSnapshot.getValue(PlayerProfile.class);
-                    Log.d(TAG, "User profile found");
+                    // Log.d(TAG, "User profile found");
 
                     //Get the match details
                     matchReference = mDatabase.getReference("matches");
@@ -123,7 +123,7 @@ public class ReviewChallenge extends AppCompatActivity {
                             for (DataSnapshot matchChildSnapshot : snapshot.getChildren()) {
 
                                 matchDetails = matchChildSnapshot.getValue(Match.class);
-                                Log.d("MainActivity", "Match data found");
+                                // Log.d("MainActivity", "Match data found");
 
                                 //Display all the details
                                 startDoubleString = "Start from " + Integer.toString(matchDetails.getStartingPoints()) + ", ";

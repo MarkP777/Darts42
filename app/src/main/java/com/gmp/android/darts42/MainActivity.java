@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+// import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
-                    Log.d("MainActivity", "User signed in");
+                    // Log.d("MainActivity", "User signed in");
                     onSignedInInitialize(user.getDisplayName(), user.getUid(), user.getEmail());
 
 
@@ -272,13 +272,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                if (snapshot.exists())
-                    Log.d("MainActivity", "User profile found");
+                if (snapshot.exists()) {
+                    // Log.d("MainActivity", "User profile found");
                     //TODO: unwrap the profile
-
+                }
 
                 else {
-                    Log.d("MainActivity", "No user status found");
+                    //Log.d("MainActivity", "No user status found");
 
                     mDatabaseReference = mDatabase.getReference().child("player_profiles");
                     PlayerProfile playerProfile = new PlayerProfile(mUsername,mUserNickname,mEMailAddress.toLowerCase(),false);
@@ -325,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
                         timeStampLong = playerMessage.getTimestamp();
                         messageID = dataSnapshot.getKey();
 
-
+                        /*
                         Log.d(TAG, "Player message "
                                 + messageID
                                 + " of type "
@@ -335,6 +335,7 @@ public class MainActivity extends AppCompatActivity {
                                 + " received from "
                                 + opponentID
                         );
+                         */
 
 
 
@@ -387,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
                 //Check the timestamp
                 timeNowCalendar = Calendar.getInstance();
                 //timeoutCalendar.setTimeInMillis(timeStampLong+challengeTimeout);
-                Log.d(TAG, "Now: " + timeNowCalendar.getTimeInMillis() + " Timeout: "+ timeStampLong+challengeTimeout);
+                // Log.d(TAG, "Now: " + timeNowCalendar.getTimeInMillis() + " Timeout: "+ timeStampLong+challengeTimeout);
                 if (timeNowCalendar.getTimeInMillis() >= (timeStampLong+challengeTimeout)) { //Expired so ignore and delete the message
                     mDatabaseReference = mDatabase.getReference().child("player_messages").child(mUid).child(messageID);
                     mDatabaseReference.removeValue();
@@ -443,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
         private void startNewMatch() {
-            Log.d(TAG, "Into startNewMatch");
+            // Log.d(TAG, "Into startNewMatch");
             detachPlayerMessageListener();
             Intent intent1;
             intent1 = new Intent(MainActivity.this, IssueChallenge.class);
@@ -451,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void reviewChallenge() {
-            Log.d(TAG, "Into review challenge");
+            // Log.d(TAG, "Into review challenge");
             detachPlayerMessageListener();
             Intent intent1;
             intent1 = new Intent(MainActivity.this, ReviewChallenge.class);
@@ -464,7 +465,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         private void continueMatch() {
-            Log.d(TAG, "Into play darts");
+            // Log.d(TAG, "Into play darts");
             detachPlayerMessageListener();
 
             Intent intent1;

@@ -3,7 +3,7 @@ package com.gmp.android.darts42;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
+// import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -159,7 +159,7 @@ public class ThrowKeyboard extends ConstraintLayout implements View.OnClickListe
         extractedText = inputConnection.getExtractedText(new ExtractedTextRequest(), 0);
         extractedCharSequence = extractedText.text;
         editedString = extractedCharSequence.toString();
-        Log.d(TAG,editedString);
+        // Log.d(TAG,editedString);
 
 
         if (editedString.matches(scorePattern) && editedString.length() > 0)

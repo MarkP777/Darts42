@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+// import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -125,7 +125,7 @@ public class IssueChallenge extends AppCompatActivity {
         commonData = CommonData.getInstance();
         mUid = commonData.getHomeUserID();
 
-        Log.d(TAG,"Starting Issue Challenge");
+        // Log.d(TAG,"Starting Issue Challenge");
 
         //Temporary code to keep things moving on
         //Tell the parent activity that we've come from Issue Challenge
@@ -180,7 +180,7 @@ public class IssueChallenge extends AppCompatActivity {
         legsSpinner.setAdapter(legsAdapter);
 
         // Set the default values for the spinners
-        startSpinner.setSelection(4); //Start at 101
+        startSpinner.setSelection(0); //Start at 501
         setsSpinner.setSelection(0); //1 set per match
         legsSpinner.setSelection(1); //3 legs per set
 
@@ -257,7 +257,7 @@ public class IssueChallenge extends AppCompatActivity {
         //Get opponent profile
         else {
             DatabaseReference playerProfilesReference = mScoresDatabase.getReference().child("player_profiles");
-            Log.d(TAG,awayEMail.toLowerCase());
+            // Log.d(TAG,awayEMail.toLowerCase());
             Query data = playerProfilesReference.orderByChild("playerEMail").equalTo(awayEMail.toLowerCase()).limitToFirst(1);
             data.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -267,7 +267,7 @@ public class IssueChallenge extends AppCompatActivity {
                         // Get the opponent's details
                         for (DataSnapshot childSnapshot : snapshot.getChildren()) {
                             founduserid = childSnapshot.getKey();
-                            Log.d(TAG, "Challenger user profile found " + founduserid);
+                            // Log.d(TAG, "Challenger user profile found " + founduserid);
                             awayProfile = childSnapshot.getValue(PlayerProfile.class);
                             opponentNameConfirm.setText(awayProfile.getPlayerName());
                             if (awayProfile.getPlayerEngaged())
@@ -301,7 +301,7 @@ public class IssueChallenge extends AppCompatActivity {
                         }
                     } else {
                         //Couldn't find a profile
-                        Log.d(TAG, "No challenger user profile found");
+                        // Log.d(TAG, "No challenger user profile found");
                         opponentNameConfirm.setText("Cannot find player with this email address. Please try again");
                     }
                 }
@@ -378,6 +378,7 @@ public class IssueChallenge extends AppCompatActivity {
                     //Unwrap the message
                     PlayerMessage playerMessage = dataSnapshot.getValue(PlayerMessage.class);
 
+                    /*
                     Log.d(TAG, "Player message of type "
                             + playerMessage.getMessageType()
                             + " with payload "
@@ -385,8 +386,9 @@ public class IssueChallenge extends AppCompatActivity {
                             + " received from "
                             + playerMessage.getSender()
                     );
+                    */
 
-                   if (playerMessage.getMessageType() == 103) {
+                    if (playerMessage.getMessageType() == 103) {
                        //Player declines
                        //Delete the message
                        mScoresDatabaseReference.child(dataSnapshot.getKey()).removeValue();
@@ -430,7 +432,7 @@ public class IssueChallenge extends AppCompatActivity {
                 String textToDisplay;
                 minutesToGo = Math.floor((double) millisUntilFinished/1000/60);
                 secondsToGo = Math.floor((double) (millisUntilFinished - (minutesToGo*60*1000))/1000);
-                //Log.d("Countdown",String.format("Waiting for opponent's response: %1$02d"+":"+"%2$02d",(int)minutesToGo,(int)secondsToGo));
+                // Log.d("Countdown",String.format("Waiting for opponent's response: %1$02d"+":"+"%2$02d",(int)minutesToGo,(int)secondsToGo));
                 textToDisplay=String.format("Waiting for "+
                         awayProfile.getPlayerNickName()+
                         "'s response: %1$02d"+

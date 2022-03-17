@@ -201,6 +201,7 @@
 
     <EditText
         android:id="@+id/etd1Input"
+        android:inputType="text|textNoSuggestions"
         app:layout_constraintLeft_toRightOf="@id/tvd1Prompt"
         app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
         android:layout_height="wrap_content"
@@ -215,7 +216,7 @@
         app:layout_constraintBaseline_toBaselineOf="@id/tvd1Prompt"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:layout_marginLeft="5dp"
+        android:layout_marginLeft="15dp"
         android:text="0"
         />
 
@@ -231,6 +232,7 @@
 
         <EditText
             android:id="@+id/etd2Input"
+            android:inputType="text|textNoSuggestions"
             app:layout_constraintLeft_toRightOf="@id/tvd2Prompt"
             app:layout_constraintBaseline_toBaselineOf="@id/tvd2Prompt"
             android:layout_height="wrap_content"
@@ -242,11 +244,10 @@
 
     <TextView
         android:id="@+id/tvd2Score"
-        app:layout_constraintLeft_toRightOf="@id/etd2Input"
+        app:layout_constraintLeft_toLeftOf="@id/tvd1Score"
         app:layout_constraintBaseline_toBaselineOf="@id/tvd2Prompt"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:layout_marginLeft="5dp"
         android:text="0"
         />
 
@@ -262,6 +263,7 @@
 
     <EditText
         android:id="@+id/etd3Input"
+        android:inputType="text|textNoSuggestions"
         app:layout_constraintLeft_toRightOf="@id/tvd3Prompt"
         app:layout_constraintBaseline_toBaselineOf="@id/tvd3Prompt"
         android:layout_height="wrap_content"
