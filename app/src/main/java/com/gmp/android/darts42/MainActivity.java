@@ -244,10 +244,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.sign_out_menu:
                 AuthUI.getInstance().signOut(this);
                 return true;
-            case R.id.Menu1:
-                intent1 = new Intent(MainActivity.this, IssueChallenge.class);
-                startActivityForResult(intent1, 1);
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
