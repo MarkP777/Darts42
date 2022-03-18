@@ -10,7 +10,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!--android:actionBarTheme="@style/Theme.Darts42.AppActionBarTheme"-->
-        >
 
         <activity android:name=".ReviewChallenge"></activity>
         <activity android:name=".IssueChallenge" ></activity>
@@ -20,7 +19,6 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
