@@ -62,6 +62,8 @@ public class ThrowKeyboard extends ConstraintLayout implements View.OnClickListe
     private ExtractedText extractedText = new ExtractedText();
     private CharSequence extractedCharSequence;
     private String editedString;
+    private Integer editedStringLength;
+    private CharSequence editedCharSequence;
 
 
 
@@ -141,32 +143,36 @@ public class ThrowKeyboard extends ConstraintLayout implements View.OnClickListe
         // do nothing if the InputConnection has not been set yet
         if (inputConnection == null) return;
 
-        // Delete text or input key value
-        // All communication goes through the InputConnection
-        if (v.getId() == R.id.button_delete) {
-            CharSequence selectedText = inputConnection.getSelectedText(0);
-            if (TextUtils.isEmpty(selectedText)) {
-                // no selection, so delete previous character
-                inputConnection.deleteSurroundingText(1, 0);
-            } else {
-                // delete the selection
-                inputConnection.commitText("", 1);
-            }
-        } else {
-            String value = keyValues.get(v.getId());
-            inputConnection.commitText(value, 1);
-        }
+        //Find out what we have already input
         extractedText = inputConnection.getExtractedText(new ExtractedTextRequest(), 0);
         extractedCharSequence = extractedText.text;
         editedString = extractedCharSequence.toString();
-        // Log.d(TAG,editedString);
+        editedStringLength = editedString.length();
 
+        // Check for Delete text
+        if (v.getId() == R.id.button_delete) {
+            if (!editedStringLength.equals(0)) {
+                editedString = editedString.substring(0, (editedStringLength - 1));
+                editedStringLength --;
+             }
+        }
+        else { //Not delete
+            //Concatenate the new text
+            editedString = editedString.concat(keyValues.get(v.getId()));
+            editedStringLength ++;
+        }
 
-        if (editedString.matches(scorePattern) && editedString.length() > 0)
+        //Commit the edited string
+        editedCharSequence = editedString.subSequence(0, editedStringLength);
+        inputConnection.setComposingText(editedCharSequence, 1);
+
+        //Check for a valid input string. Enable the send button if OK
+        //We won't get here if the text ends with the Send character
+        if (editedString.matches(scorePattern) && editedStringLength > 0)
         {
             mButtonEnter.setAlpha(1.0f);
             mButtonEnter.setEnabled(true);
-         }
+        }
         else
         {
             mButtonEnter.setAlpha(0.5f);
