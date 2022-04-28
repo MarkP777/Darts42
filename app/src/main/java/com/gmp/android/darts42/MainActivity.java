@@ -37,46 +37,24 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-
-/*
-public class MainActivity extends AppCompatActivity
-        implements MyRecyclerViewAdapter.ItemClickListener
-*/
-
 public class MainActivity extends AppCompatActivity {
 
 
     private static final String TAG = "MainActivity";
 
     public static final String ANONYMOUS = "anonymous";
-    public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
 
     public static final int RC_SIGN_IN = 1;
-    public static final String EXTRA_OPPONENTID = "Opponent_ID";
-    public static final String EXTRA_MATCHID = "Match_ID";
 
-    private final Long challengeTimeout = (long) 18000 * 1000; //Challenge timeout in milliseconds
-
-
-
-
-    private EditText mMessageEditText;
     private Button actionButton;
     private TextView whatsHappeningText;
-    private TextView textTotalScore;
-    private Integer thisScore;
-    private RecyclerView recyclerView;
-    private LinearLayout bottomSectionPrompt;
-    private LinearLayout bottomSectionWaiting;
 
     private String mUsername;
     private String mUserNickname;
     private String mUid;
     private String mEMailAddress;
-    private String homeStatus;
     private Integer buttonState;
     private Long timeStampLong;
-    private Calendar timeoutCalendar = Calendar.getInstance();
     private Calendar timeNowCalendar;
 
     private String matchID;
@@ -94,24 +72,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-
-        //setSupportActionBar(findViewById(R.id.main_toolbar));
-        //getSupportActionBar().setTitle("Darts 42");
-
-        //getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        actionButton = (Button) findViewById(R.id.btAction);
-        actionButton.setEnabled(false);
-
-        whatsHappeningText = (TextView) findViewById(R.id.tvWhatsHappening);
-        mUsername = ANONYMOUS;
 
         mDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
         commonData = CommonData.getInstance();
 
+        mUsername = ANONYMOUS;
+        
         mDatabaseReference = mDatabase.getReference().child("player_messages");
 
 
@@ -126,25 +93,6 @@ public class MainActivity extends AppCompatActivity {
 
 
                     attachPlayerMessageListener();
-
-                    //TODO: Set the button to default state of set up new game
-                    //TODO: Set a new listener on player_messages
-                    //TODO: When this fires look at the type - button changes to continue game or
-                    //TODO: respond to challenge
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 } else {
                     // User is signed out
@@ -164,13 +112,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-
-/*
-        @Override
-        public void onItemClick (View view,int position){
-            Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
-        }
-*/
     }
 
     @Override
@@ -199,25 +140,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-    /*
-        if (adapter.getItemCount() != 0)
-        {
 
-            // When we resume the recycle view will be rebuilt with items from
-            // the Firebase DB. So, clear the list of scores and reset the total
-            scoreLinesIn4Columns.clear();
-            totalScore = 0;
-
-            // Workaround to get around Android crash
-            // See https://stackoverflow.com/questions/30220771/recyclerview-inconsistency-detected-invalid-item-position
-            recyclerView.getRecycledViewPool().clear();
-
-            // Tell the adapter that everything's changed
-            adapter.notifyDataSetChanged();
-       }
-
-     */
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+       mFirebaseAuth.addAuthStateListener(mAuthStateListener);
 
     }
 
@@ -250,6 +174,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onSignedInInitialize(String username, String userid, String userEMailAddress) {
+
+        setContentView(R.layout.activity_main);
+
+        //setSupportActionBar(findViewById(R.id.main_toolbar));
+        //getSupportActionBar().setTitle("Darts 42");
+
+        //getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        actionButton = (Button) findViewById(R.id.btAction);
+        actionButton.setEnabled(false);
+
+        whatsHappeningText = (TextView) findViewById(R.id.tvWhatsHappening);
+
         mUsername = username;
 
         mUserNickname = findNickname(mUsername);
@@ -385,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
                 timeNowCalendar = Calendar.getInstance();
                 //timeoutCalendar.setTimeInMillis(timeStampLong+challengeTimeout);
                 // Log.d(TAG, "Now: " + timeNowCalendar.getTimeInMillis() + " Timeout: "+ timeStampLong+challengeTimeout);
-                if (timeNowCalendar.getTimeInMillis() >= (timeStampLong+challengeTimeout)) { //Expired so ignore and delete the message
+                if (timeNowCalendar.getTimeInMillis() >= (timeStampLong+Parameters.challengeTimeout)) { //Expired so ignore and delete the message
                     mDatabaseReference = mDatabase.getReference().child("player_messages").child(mUid).child(messageID);
                     mDatabaseReference.removeValue();
                 }
@@ -468,11 +405,6 @@ public class MainActivity extends AppCompatActivity {
             intent1 = new Intent(MainActivity.this, PlayDarts.class);
             startActivityForResult(intent1, 12);
 
-        }
-
-
-        private void setHomeStatus (String playerStatus){
-            homeStatus = playerStatus;
         }
 
     private String findNickname(String fullName) {

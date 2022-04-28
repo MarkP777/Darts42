@@ -2,7 +2,6 @@ package com.gmp.android.darts42;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Group;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,15 +11,12 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 // import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -32,9 +28,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import org.w3c.dom.Text;
-
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -220,6 +213,7 @@ public class PlayDarts extends AppCompatActivity {
     private Boolean setOver;
 
     private Boolean myGoNext;
+    private String whoStartedLastLegId;
 
     private String messageText;
 
@@ -599,8 +593,10 @@ public class PlayDarts extends AppCompatActivity {
                             //Sort out who to go next
                             if (scoreRecord.getThrower().equals(myUId)) {
                                 myGoNext = false;
+                                whoStartedLastLegId = theirID;
                             } else {
                                 myGoNext = true;
+                                whoStartedLastLegId = myUId;
                             }
                         } else { //Not a seed record
                              if (scoreRecord.getThrower().equals(myUId)) { //"my" score - because it's my ID
@@ -1083,7 +1079,7 @@ public class PlayDarts extends AppCompatActivity {
                     scoresDataBaseReference = fbDatabase.getReference("scores").child(matchID);
                     scoresDataBaseReference.removeValue();
                     if (!matchOver) {
-                        score.setThrower(winner); //Winner's id so that the loser starts next leg
+                        score.setThrower(whoStartedLastLegId); //id of person starting last leg so that the other player starts next leg
                         score.setThrowString("");
                         score.setThrowScore(-1);
                         score.setTotalScore(new ArrayList<Integer>(Arrays.asList(new Integer[]{startingPoints, startingPoints})));
@@ -1221,7 +1217,7 @@ public class PlayDarts extends AppCompatActivity {
         if (randomNumber < 0.5) { //0.0 to 0.5: straight
             dartString = "";
         }
-        else if (randomNumber < 0.7 ){ //0.0 to 0.7 miss
+        else if (randomNumber < 0.7 ){ //0.5 to 0.7 miss
             dartString = "m";
         }
         else if (randomNumber < 0.85) { //0.7 to 0.85 double
